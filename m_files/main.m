@@ -5,22 +5,22 @@ function main(img_folder, img_names, Grey_boneThreshold, Grey_marrowThreshold, I
   % S1_meshPreparation;
   S1;
 
-  disp(['Step 2']);
-  % S2_AnsysMesheStreamout;
-  S2;
-
-  disp(['Step 3']);
-  % S3_boneCalibration;
-  S3;
-
-  disp(['Step 4']);
-  S4_boneModulus;
-
-  disp(['Step 5']);
-  S5_marrowModulus;
-
-  disp(['Step 6']);
-  S6_mediumModulus_bilinear;
+%   disp(['Step 2']);
+%   % S2_AnsysMesheStreamout;
+%   S2;
+% 
+%   disp(['Step 3']);
+%   % S3_boneCalibration;
+%   S3;
+% 
+%   disp(['Step 4']);
+%   S4_boneModulus;
+% 
+%   disp(['Step 5']);
+%   S5_marrowModulus;
+% 
+%   disp(['Step 6']);
+%   S6_mediumModulus_bilinear;
 
   toc
 end

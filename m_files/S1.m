@@ -9,7 +9,7 @@ Grey_Rec(:,:,1) = I;
 
 for p = 2:numFrames
   Grey_Rec(:,:,p) = imread([img_folder, '/', fileNames{p}]);
-  Grey_Rec  = double(Grey_Rec);
+  Grey_Rec = double(Grey_Rec);
 end
 
 nCells = 1;
@@ -18,7 +18,7 @@ Grey_Sub = subSampling(Grey_Rec, nCells);
 
 clearvars -except Grey_Sub nCells Grey_boneThreshold Grey_marrowThreshold Image_Resolution calibration_folder_1 calibration_folder_2 calibration_names;
 
-Binary_Unconnected = Grey_Sub > Grey_boneThreshold;
+Binary_Unconnected = Grey_Sub > Grey_boneThreshold(1);
 
 [Binary_islands, Num_islands] = bwlabeln(Binary_Unconnected,6);
 [freq,number] = max(histc(Binary_islands(:),1:Num_islands));
@@ -39,7 +39,7 @@ Bone_Mask = [Bone_Number_Vector Bone_Mask_Vector];
 
 clearvars -except Grey_Sub nCells nBones Bone_Number Bone_Mask Grey_boneThreshold Grey_marrowThreshold Image_Resolution calibration_folder_1 calibration_folder_2 calibration_names;
 
-Binary_Unconnected = Grey_marrowThreshold <= Grey_Sub & Grey_Sub <= Grey_boneThreshold ;
+Binary_Unconnected = Grey_marrowThreshold(1) <= Grey_Sub & Grey_Sub <= Grey_boneThreshold(1) ;
 
 [Binary_islands, Num_islands] = bwlabeln(Binary_Unconnected,6);
 [freq,number]=max(histc(Binary_islands(:),1:Num_islands));
