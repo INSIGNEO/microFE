@@ -1,8 +1,12 @@
 %% 
 %Calculate the average gray value of the low BMD Phantom images
 %Create an array of filenames that make up the image sequence
- addpath('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph250');
- fileFolder = fullfile('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph250');
+
+calibration_folder_1 = '/home/ale/postdoc/microFE/images/Ph250';
+calibration_folder_2 = '/home/ale/postdoc/microFE/images/Ph750';
+
+ addpath(calibration_folder_1);
+ fileFolder = fullfile(calibration_folder_1);
  dirOutput = dir(fullfile(fileFolder,'Ph****'));
  fileNames = {dirOutput.name}';
  numFrames = numel(fileNames);
@@ -17,14 +21,14 @@
       sequence(:,:,p) = imread(fileNames{p}); 
  end
  
- rmpath('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph250');
+ rmpath(calibration_folder_1);
  
  avGrey_Low = mean(mean(mean(sequence,3)));
 %% 
 %Calculate the average gray value of the high BMD Phantom images
 %Create an array of filenames that make up the image sequence
-addpath('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph750');
- fileFolder = fullfile('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph750');
+addpath(calibration_folder_2);
+ fileFolder = fullfile(calibration_folder_2);
  dirOutput = dir(fullfile(fileFolder,'Ph****'));
  fileNames = {dirOutput.name}';
  numFrames = numel(fileNames);
@@ -36,7 +40,7 @@ addpath('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph750');
  for p = 2:numFrames
       sequence(:,:,p) = imread(fileNames{p}); 
  end
- rmpath('C:\Users\mep11yc\Desktop\Images\ConvergenceStudy\Ph750');
+ rmpath(calibration_folder_2);
  
  avGrey_High = mean(mean(mean(sequence,3)));
 %%
