@@ -25,12 +25,13 @@ The `m_files/main.m` file executes the six steps in one go.
 
 After executing steps S1 to S6, the following files are generated
 
-- boneChangeData.txt
-- boneModulusData.txt
-- elementdata.txt
-- marrowChangeData.txt
-- marrowModulusData.txt
-- mediumChangeData.txt
-- mediumModulusData.txt
-- nodedata.txt
-- Subsample.mat
+- `m_files/boneChangeData.txt`
+- `m_files/boneModulusData.txt`
+- `m_files/elementdata.txt`
+- `m_files/marrowChangeData.txt`
+- `m_files/marrowModulusData.txt`
+- `m_files/mediumChangeData.txt`
+- `m_files/mediumModulusData.txt`
+- `m_files/nodedata.txt`
+
+These are used to build the FE model in ANSYS.

@@ -1,21 +1,26 @@
-tic;
+function main(img_folder, img_names, Grey_boneThreshold, Grey_marrowThreshold, Image_Resolution, calibration_folder_1, calibration_folder_2, calibration_names)
+  tic;
 
-disp(['S1 start']);
-S1_meshPreparation;
+  disp(['Step 1']);
+  % S1_meshPreparation;
+  S1;
 
-disp(['S2 start']);
-S2_AnsysMesheStreamout;
+  disp(['Step 2']);
+  % S2_AnsysMesheStreamout;
+  S2;
 
-disp(['S3 start']);
-S3_boneCalibration;
+  disp(['Step 3']);
+  % S3_boneCalibration;
+  S3;
 
-disp(['S4 start']);
-S4_boneModulus;
+  disp(['Step 4']);
+  S4_boneModulus;
 
-disp(['S5 start']);
-S5_marrowModulus;
+  disp(['Step 5']);
+  S5_marrowModulus;
 
-disp(['S6 start']);
-S6_mediumModulus_bilinear;
+  disp(['Step 6']);
+  S6_mediumModulus_bilinear;
 
-toc
+  toc
+end

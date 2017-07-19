@@ -3,8 +3,6 @@
 
 img_folder = '/home/ale/postdoc/microFE/images/ConvergenceCube';
 
-
-
 addpath(img_folder);
 fileFolder = fullfile(img_folder);
 dirOutput = dir(fullfile(fileFolder,'Scan1_****'));
@@ -43,7 +41,6 @@ nCells = 1;
   % Grey_boneThreshold = str2num(Grey_boneThreshold{:})
   Grey_boneThreshold = 18500
   Binary_Unconnected = Grey_Sub > Grey_boneThreshold;
-
 
 %Connectivity filter. To get rid of the elements which are not
 %connected to do the major part of the bones.
@@ -90,7 +87,6 @@ nCells = 1;
 % Assign the Cubic matrix with the medium element number starting from
 % nBones+1, ending with nBones+nMediums.
 
-
   nMediums = numel(find(Binary_Matrix_Medium))
   Medium_Number = Binary_Matrix_Medium(:);
   Medium_Number(find(Medium_Number)) = (nBones+1):(nBones+nMediums);
@@ -128,7 +124,4 @@ nCells = 1;
   save('Subsample','Binary_Matrix','nCells','Element_Order')
 
 % Clean memory
-  clearvars -except nCells nBones nMarrows nMediums nElements...
-                    Marrow_Mask Bone_Mask Medium_Mask        ...
-                    'Binary_Matrix' 'Element_Order'          ...
-                    Grey_marrowThreshold;
+  clearvars -except nCells nBones nMarrows nMediums nElements Marrow_Mask Bone_Mask Medium_Mask 'Binary_Matrix' 'Element_Order' Grey_marrowThreshold;
