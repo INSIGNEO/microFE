@@ -1,18 +1,16 @@
-addpath(img_folder);
 fileFolder = fullfile(img_folder);
 dirOutput = dir(fullfile(fileFolder,img_names));
 fileNames = {dirOutput.name}';
 numFrames = numel(fileNames);
-I = imread(fileNames{1});
+I = imread([img_folder, '/', fileNames{1}]);
 
 Grey_Rec = zeros([size(I) numFrames],class(I));
 Grey_Rec(:,:,1) = I;
 
 for p = 2:numFrames
-  Grey_Rec(:,:,p) = imread(fileNames{p});
+  Grey_Rec(:,:,p) = imread([img_folder, '/', fileNames{p}]);
   Grey_Rec  = double(Grey_Rec);
 end
-rmpath(img_folder);
 
 nCells = 1;
 
