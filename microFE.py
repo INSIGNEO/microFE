@@ -1,34 +1,45 @@
 import os
 
-img_folder = "/home/ale/postdoc/microFE/images/ConvergenceCube"
-img_names = "Scan1_****"
-
-Grey_boneThreshold = 18500
-Grey_marrowThreshold = 4500
-Image_Resolution = 0.00996
-
-calibration_folder_1 = "/home/ale/postdoc/microFE/images/Ph250"
-calibration_folder_2 = "/home/ale/postdoc/microFE/images/Ph750"
-calibration_names = "Ph****"
-
-params = [img_folder, img_names, Grey_boneThreshold, Grey_marrowThreshold,
-          Image_Resolution, calibration_folder_1, calibration_folder_2,
-          calibration_names]
-params1 = [img_names, Grey_boneThreshold]
-
-sep = '" '
-pre = '"'
 if __name__ == "__main__":
-    command = 'm_files/run_main.sh /usr/local/MATLAB/MATLAB_Runtime/v90 '
+
+    WORK = os.getenv('WORK')
+    img_folder = "{0}microFE/images/ConvergenceCube".format(WORK)
+    img_names = "Scan1_****"
+
+    nCells = 1
+    Grey_boneThreshold = 18500
+    Grey_marrowThreshold = 4500
+    Image_Resolution = 0.00996
+
+    calibration_folder_1 = "{0}microFE/images/Ph250".format(WORK)
+    calibration_folder_2 = "{0}microFE/images/Ph750".format(WORK)
+    calibration_names = "Ph****"
+
+    params = [img_folder, img_names, Grey_boneThreshold, nCells,
+              Grey_marrowThreshold, Image_Resolution, calibration_folder_1,
+              calibration_folder_2, calibration_names]
+
+    sep = '" '
+    pre = '"'
+
+    microFE_file = "microFE_qsub.sh"
+
+    f=open(microFE_file,"w")
+    line="#!/bin/bash --login \n"
+    line+="#PBS -N uFE \n"
+    line+="#PBS -l select=serial=true:ncpus=1 \n"
+    line+="#PBS -l walltime=01:00:00 \n"
+    line+="#PBS -A d137-me1ame \n"
+    line+="export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR) \n"
+    line+="cd $PBS_O_WORKDIR \n"
+    line+="module load mcr/9.0 \n"
+
+    command = "{0}microFE/m_files/run_main.sh $LD_LIBRARY_PATH ".format(WORK)
     for p in params:
         command += pre+str(p)+sep
+    line += command
 
-    os.system(command)
-    # print command
+    f.write(line)
+    f.close()
 
-    # command = 'm_files/run_S1.sh /usr/local/MATLAB/MATLAB_Runtime/v90 '
-    # for p in params1:
-    #     command += pre+str(p)+sep
-    #
-    # os.system(command)
-    # # print command
+    os.system("qsub {0}".format(microFE_file))

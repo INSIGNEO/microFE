@@ -35,3 +35,25 @@ After executing steps S1 to S6, the following files are generated
 - `m_files/nodedata.txt`
 
 These are used to build the FE model in ANSYS.
+
+## ARCHER
+
+In `$WORK`, there is a `microFE` folder organised as
+
+```bash
+microFE/
+|-- m_files/
+|   |-- main
+|   |-- run_main.sh
+|-- microFE.py
+|-- images/
+|   |-- ConvergenceCube/
+|   |   |--- Scan_****.tif
+|   |-- Ph250/
+|   |   |--- Ph****.tif
+|   |-- Ph750/
+|   |   |--- Ph****.tif
+
+```
+
+the script `microFE.py` launches the six steps. The input folders are hardcoded in the Python script.

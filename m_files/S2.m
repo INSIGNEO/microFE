@@ -1,3 +1,5 @@
+Image_Resolution = str2double(Image_Resolution)
+
 element_size = Image_Resolution*nCells;
 
 look_up_matrix = zeros(size(Binary_Matrix)+1);
@@ -151,4 +153,4 @@ fclose(fid);
 
 end
 
-clearvars -except nBones nMarrows nMedium nElements Marrow_Mask Bone_Mask Medium_Mask Grey_marrowThreshold calibration_folder_1 calibration_folder_2 calibration_names;
+% clearvars -except nBones nMarrows nMedium nElements Marrow_Mask Bone_Mask Medium_Mask Grey_marrowThreshold calibration_folder_1 calibration_folder_2 calibration_names;
