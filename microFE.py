@@ -14,6 +14,7 @@ calibration_names = "Ph****"
 params = [img_folder, img_names, Grey_boneThreshold, Grey_marrowThreshold,
           Image_Resolution, calibration_folder_1, calibration_folder_2,
           calibration_names]
+params1 = [img_names, Grey_boneThreshold]
 
 sep = '" '
 pre = '"'
@@ -23,3 +24,11 @@ if __name__ == "__main__":
         command += pre+str(p)+sep
 
     os.system(command)
+    # print command
+
+    # command = 'm_files/run_S1.sh /usr/local/MATLAB/MATLAB_Runtime/v90 '
+    # for p in params1:
+    #     command += pre+str(p)+sep
+    #
+    # os.system(command)
+    # # print command
