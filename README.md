@@ -1,7 +1,5 @@
 # microFE
 
-*(from Sara)*
-
 In `m_files\` there is the code for generating FE models with heterogeneous
 material properties. It is made of 6 steps (S1-S6) to be run in sequence,
 while the other functions are called inside the code.
@@ -57,3 +55,17 @@ microFE/
 ```
 
 the script `microFE.py` launches the six steps. The input folders are hardcoded in the Python script.
+
+## ParaFE instructions
+
+ParaFEM uses several input files to define the geometry, boundary conditions and parameters for the simulation. These are defined in the following files:
+
+- XXXX.bnd, which contains the list of nodes which contain, at least, one constrained degree-of-freedom (DOF). Constrained DOFs are indicated with "1", while unconstrained are indicated with "0". It is important to note that nodes without contrained DOFs should not be listed in this file.
+
+- XXXX.d, which contains the geometry of the system. The first line should read "*THREE_DIMENSIONAL", followed by "*NODES", then by the list of nodes. The list of nodes should be written such as "nnod x y z", where "nnod" is the node number, "x" is the x-coordinate, "y" is the y-coordinate and "z" is the z-coordinate. Then "*ELEMENTS" followed by the list of elements. This list, in the case of linear hexahedra, should be written as "nel 3 8 1 e1 e2 e3 e4 e5 e6 e7 e8 1", where "nel" is the element number, and "e1-e8" is the connectivity of the element. The connectivity of linear hexahedra follows the same convention as ABAQUS (but just in case, please consult the attached example).
+
+- XXXX.dat, which contains the parameters of the simulation. The first line should read as "nel nnod nres nlnod nfixnod nip", the second line should read as "limit tol e v", the third line should read as "nodpel", the fourth line should read as "nloadstep, jump", and the fifth line should read as "tol2". These stand for, respectively, the number of elements in the mesh, the number of nodes in the mesh, the number of restrained nodes, the number of loaded nodes, the number of integration points, the number of preconditioned conjugate gradient (PCG) iterations, the convergence tolerance of PCG, Young's modulus, Poisson's ratio, the number of nodes per element, the number of load steps, the time increment per load step and the convergence tolerance of the Newton-Raphson scheme. At this moment, even though they need to be included, "e", "v", "nloadstep" and "jump" are place-holders as they are indicated elsewhere.
+
+- XXXX.fix, which contains the non-homogeneously contrained DOFs (i.e. where displacements are prescribed to a non-zero value) of the system. Each line should read as "nnod ndof val", where "nnod" is the number of node, "ndof" is the number of DOF (1 for x-coordinate, 2 for y-coordinate and 3 for z-coordinate).  If two DOFs of the same node have prescribed displacements, each DOF should be prescribed in a different line and in ascending order.
+
+- XXXX.lds, which contains the prescribed loads. Each loaded node should be indicated in a different line such as "nnod lx ly lz", where "nnod" is the node number, "lx" is the load in the x-coordinate, "ly" is the load in the y-coordinate, and "lz" is the load in the z-coordinate.
