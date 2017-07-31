@@ -54,7 +54,13 @@ microFE/
 
 ```
 
-the script `microFE.py` launches the six steps. The input folders are hardcoded in the Python script.
+Launch the pipeline as
+
+```bash
+python microFE.py microFE.ini
+```
+
+where `microFE.ini` is a configuration file.
 
 ## ParaFE instructions
 
