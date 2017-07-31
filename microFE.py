@@ -1,19 +1,32 @@
 import os
-
+import sys
+from ConfigParser import SafeConfigParser
 if __name__ == "__main__":
 
-    WORK = os.getenv('WORK')
-    img_folder = "{0}microFE/images/ConvergenceCube".format(WORK)
-    img_names = "Scan1_****"
+    # parse .ini configuration file
+    p = SafeConfigParser()
+    p.read(sys.argv[1])
 
-    nCells = 1
-    Grey_boneThreshold = 18500
-    Grey_marrowThreshold = 4500
-    Image_Resolution = 0.00996
+    WORK = p.get("directories", "work")
+    IMG = p.get("directories", "img")
+    img_folder = "{0}{1}".format(WORK, IMG)
+    img_names = p.get("images", "img_names")
 
-    calibration_folder_1 = "{0}microFE/images/Ph250".format(WORK)
-    calibration_folder_2 = "{0}microFE/images/Ph750".format(WORK)
-    calibration_names = "Ph****"
+    nCells = p.get("parameters", "nCells")
+    Grey_boneThreshold = p.get("parameters", "Grey_boneThreshold")
+    Grey_marrowThreshold = p.get("parameters", "Grey_marrowThreshold")
+    Image_Resolution = p.get("parameters", "Image_Resolution")
+
+    CAL1 = p.get("directories", "cal1")
+    CAL2 = p.get("directories", "cal2")
+    calibration_folder_1 = "{0}{1}".format(WORK, CAL1)
+    calibration_folder_2 = "{0}{1}".format(WORK, CAL2)
+    calibration_names = p.get("images", "cal_names")
+
+    M_FILES = p.get("directories", "m_files")
+    LD_LIB_PATH = p.get("directories", "ld_lib_path")
+
+    job_name = p.get("job", "name")
 
     params = [img_folder, img_names, Grey_boneThreshold, nCells,
               Grey_marrowThreshold, Image_Resolution, calibration_folder_1,
@@ -22,24 +35,37 @@ if __name__ == "__main__":
     sep = '" '
     pre = '"'
 
-    microFE_file = "microFE_qsub.sh"
+    if p.get("job", "type") == "HPC":
+        microFE_file = "microFE_{0}.sh".format(job_name)
 
-    f=open(microFE_file,"w")
-    line="#!/bin/bash --login \n"
-    line+="#PBS -N uFE \n"
-    line+="#PBS -l select=serial=true:ncpus=1 \n"
-    line+="#PBS -l walltime=01:00:00 \n"
-    line+="#PBS -A d137-me1ame \n"
-    line+="export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR) \n"
-    line+="cd $PBS_O_WORKDIR \n"
-    line+="module load mcr/9.0 \n"
+        f=open(microFE_file,"w")
+        line="#!/bin/bash --login \n"
+        line+="#PBS -N {0} \n".format(job_name)
+        line+="#PBS -l select=serial=true:ncpus=1 \n"
 
-    command = "{0}microFE/m_files/run_main.sh $LD_LIBRARY_PATH ".format(WORK)
-    for p in params:
-        command += pre+str(p)+sep
-    line += command
+        walltime = p.get("job", "walltime")
+        line+="#PBS -l walltime=01:00:00 \n".format(walltime)
 
-    f.write(line)
-    f.close()
+        budget_code = p.get("job", "budget_code")
+        line+="#PBS -A d137-me1ame \n".format(budget_code)
 
-    os.system("qsub {0}".format(microFE_file))
+        line+="export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR) \n"
+        line+="cd $PBS_O_WORKDIR \n"
+        line+="module load mcr/9.0 \n"
+
+        command = "{0}{1}run_main.sh {2} ".format(WORK, M_FILES, LD_LIB_PATH)
+        for p in params:
+            command += pre+str(p)+sep
+        line += command
+
+        f.write(line)
+        f.close()
+
+        os.system("qsub {0}".format(microFE_file))
+
+    else:
+        command = "{0}{1}run_main.sh {2} ".format(WORK, M_FILES, LD_LIB_PATH)
+        for p in params:
+            command += pre+str(p)+sep
+
+        print command
