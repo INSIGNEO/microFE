@@ -1,6 +1,8 @@
+
 import os
 import sys
 from ConfigParser import SafeConfigParser
+
 if __name__ == "__main__":
 
     # parse .ini configuration file
@@ -69,3 +71,4 @@ if __name__ == "__main__":
             command += pre+str(p)+sep
 
         print command
+        os.system(command)

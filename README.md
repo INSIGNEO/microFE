@@ -1,4 +1,4 @@
-# microFE
+# microFE (matlab)
 
 In `m_files\` there is the code for generating FE models with heterogeneous
 material properties. It is made of 6 steps (S1-S6) to be run in sequence,
@@ -44,6 +44,7 @@ microFE/
 |   |-- main
 |   |-- run_main.sh
 |-- microFE.py
+|-- microFE.ini
 |-- images/
 |   |-- ConvergenceCube/
 |   |   |--- Scan_****.tif
