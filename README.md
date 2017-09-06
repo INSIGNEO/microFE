@@ -1,4 +1,6 @@
-# microFE (matlab)
+# microFE
+
+## Matlab pipeline
 
 In `m_files\` there is the code for generating FE models with heterogeneous
 material properties. It is made of 6 steps (S1-S6) to be run in sequence,
@@ -34,7 +36,7 @@ After executing steps S1 to S6, the following files are generated
 
 These are used to build the FE model in ANSYS.
 
-## ARCHER
+## ARCHER deployment
 
 In `$WORK`, there is a `microFE` folder organised as
 
