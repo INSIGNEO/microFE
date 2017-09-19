@@ -20,7 +20,7 @@
 
 % clearvars -except nBones nMarrows nMediums nElements Marrow_Mask Medium_Mask a b m n Bone_Modulus_Map Grey_marrowThreshold;
 
-%% 
+%%
 
 % Some of the available FEM codes are able to manage only a limited number
 
@@ -80,11 +80,11 @@
 
   E_Min_Bone = min(Modulus_Vector);
 
-  Pre_nMatcards = ceil((E_Max_Bone-E_Min_Bone)/E_delta); 
+  Pre_nMatcards = ceil((E_Max_Bone-E_Min_Bone)/E_delta);
 
   GV_Min_Bone = min(Bone_Modulus_Map(:,2)); % save there for later use
 
-  
+
 
 % Clean memory
 
@@ -102,31 +102,31 @@ tic
 
 for p = 1:Pre_nMatcards;
 
-   
+
 
    E_Max_Bone = max(Modulus_Vector);
 
    E_sel = E_Max_Bone-E_delta;
 
-   Matcards_boneInfo(p,1) = E_Max_Bone; 
+   Matcards_boneInfo(p,1) = E_Max_Bone;
 
-   
+
 
    if  E_sel >= E_Min_Bone;
 
-        
 
-       pointer = find(Modulus_Vector >= E_sel);      
+
+       pointer = find(Modulus_Vector >= E_sel);
 
        Matcards_boneElement(pointer) = p;
 
        Modulus_Vector(pointer) = 0;
 
-    
 
-   else 
 
-        
+   else
+
+
 
        pointer = find(Modulus_Vector);
 
@@ -136,11 +136,11 @@ for p = 1:Pre_nMatcards;
 
        break
 
-       
+
 
    end
 
-    
+
 
 end
 
@@ -172,7 +172,7 @@ toc
 
   for k = 1:nMatcards_Bone
 
-    
+
 
       matCell(2*k-1,1) = {'MP'};
 
@@ -182,7 +182,7 @@ toc
 
       matCell{2*k-1,4} = Matcards_boneInfo(k,1);
 
-    
+
 
       matCell(2*k,1) = {'MP'};
 
@@ -192,7 +192,7 @@ toc
 
       matCell{2*k,4} = 0.3;
 
-    
+
 
   end
 
@@ -202,9 +202,9 @@ toc
 
 %To output this matCell matrix in a text file with the comma delimiter
 
-  matCell=transpose(matCell);  
+  matCell=transpose(matCell);
 
-  filename = 'boneModulusData.txt';
+  filename = [out_folder,'boneModulusData.txt'];
 
   fid = fopen(filename, 'w');
 
@@ -230,7 +230,7 @@ changeCell = cell(nBones,3);
 
 for k = 1:nBones
 
-    
+
 
     changeCell(k,1) = {'MPCHG'};
 
@@ -238,9 +238,9 @@ for k = 1:nBones
 
     changeCell{k,3} = k;
 
-      
 
-end    
+
+end
 
 %% To output this changeCell matrix in a text file with the comma delimiter
 
@@ -248,7 +248,7 @@ end
 
 changeCell=transpose(changeCell);
 
-filename = 'boneChangeData.txt';
+filename = [out_folder,'boneChangeData.txt'];
 
 fid = fopen(filename, 'w');
 
@@ -261,6 +261,3 @@ fclose(fid);
 % Clean memory
 
 %   clearvars -except nBones nMarrows nMediums nElements nMatcards_Bone Marrow_Mask Medium_Mask  E_Min_Bone GV_Min_Bone Grey_marrowThreshold;
-
-                   
-

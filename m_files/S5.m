@@ -10,13 +10,13 @@
 
   matCell = {'MP','EX',[nMatcards_Bone + nMatcards_Marrow],E_Marrow; 'MP','PRXY',[nMatcards_Bone + nMatcards_Marrow],PR_Marrow};
 
-             
+
 
 %To output this matCell matrix in a text file with the comma delimiter
 
-  matCell=transpose(matCell);  
+  matCell=transpose(matCell);
 
-  filename = 'marrowModulusData.txt';
+  filename = [out_folder,'marrowModulusData.txt'];
 
   fid = fopen(filename, 'w');
 
@@ -38,9 +38,9 @@
 
 
 
-  for k = 1:nMarrows   
+  for k = 1:nMarrows
 
-      
+
 
       changeCell(k,1) = {'MPCHG'};
 
@@ -48,11 +48,11 @@
 
       changeCell{k,3} = Marrow_Mask(k,1);
 
-      
 
-  end    
 
-  
+  end
+
+
 
 %To output this changeCell matrix in a text file with the comma delimiter
 
@@ -60,7 +60,7 @@
 
   changeCell=transpose(changeCell);
 
-  filename = 'marrowChangeData.txt';
+  filename = [out_folder,'marrowChangeData.txt'];
 
   fid = fopen(filename, 'w');
 

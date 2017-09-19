@@ -8,3 +8,12 @@
 */nodedata.txt
 */Subsample.mat
 images/*
+m_files/test_imgs/*
+m_files/S*b.m
+m_files/params.m
+m_files/mainm.m
+parafem_inputs/*
+Subsample.mat
+microFE_microFE_job_test.sh
+m_files/main
+m_files/run_main.sh

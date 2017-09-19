@@ -1,4 +1,4 @@
-function main(img_folder, img_names, Grey_boneThreshold, nCells, Grey_marrowThreshold, Image_Resolution, calibration_folder_1, calibration_folder_2, calibration_names)
+function main(img_folder, img_names, Grey_boneThreshold, nCells, Grey_marrowThreshold, Image_Resolution, calibration_folder_1, calibration_folder_2, calibration_names, out_folder)
   %tic;
 
   disp(['Step 1']);
@@ -16,7 +16,7 @@ function main(img_folder, img_names, Grey_boneThreshold, nCells, Grey_marrowThre
   disp(['Step 4']);
   % S4_boneModulus;
   S4;
-  
+
   disp(['Step 5']);
   % S5_marrowModulus;
   S5;

@@ -65,7 +65,7 @@ python microFE.py microFE.ini
 
 where `microFE.ini` is a configuration file.
 
-## ParaFE instructions
+## ParaFE instructions from Francesc
 
 ParaFEM uses several input files to define the geometry, boundary conditions and parameters for the simulation. These are defined in the following files:
 
@@ -78,3 +78,5 @@ ParaFEM uses several input files to define the geometry, boundary conditions and
 - XXXX.fix, which contains the non-homogeneously contrained DOFs (i.e. where displacements are prescribed to a non-zero value) of the system. Each line should read as "nnod ndof val", where "nnod" is the number of node, "ndof" is the number of DOF (1 for x-coordinate, 2 for y-coordinate and 3 for z-coordinate).  If two DOFs of the same node have prescribed displacements, each DOF should be prescribed in a different line and in ascending order.
 
 - XXXX.lds, which contains the prescribed loads. Each loaded node should be indicated in a different line such as "nnod lx ly lz", where "nnod" is the node number, "lx" is the load in the x-coordinate, "ly" is the load in the y-coordinate, and "lz" is the load in the z-coordinate.
+
+- To assign personalised material properties, it would be helpful if you are familiar with the `umat` format in ABAQUS or ANSYS. In brief, you need to provide the stress (Kirchhoff stress) update, separate the strains in case of an elastoplastic materials (elastic from plastic, logarithmic strains), and calculate the tangent operator (derivatives of Kirchhoff stresses vs logarithmic strains). I chose this format because it can be integrated exactly as in small-strain cases, making the whole procedure a lot easier. An example is attached. This is an isotropic linear elastic material (Hencky hyperelasticity in large strain) with an eccentric ellipsoid yield surface (it is usable for trabecular bone at the macroscopic level). The constants are defined in the beginning of the code, and are Young's modulus, Poisson's ratio, uniaxial tensile limit, uniaxial compressive limit, zeta defines the shape of the yield surface (it ranges from 0.5 where the surface is a cone, Drucker-Prager, to -1, where it looks like two parallel planes; do not use it with 0.5 as there is no "check for singularity" in this subroutine). The input data to this subroutine are logarithmic strains, and basically any associated operations to calculate stresses should give you Kirchhoff stresses. The first lines until "! Determine if there is yielding" perform the elastic trial stage of a predictor-corrector strategy for elastoplastic materials. If some measure of equivalent stress surpasses the yield limit, then a corrector procedure follows. The plastic return-mapping is performed with a Newton-Raphson coupled with a Line Search, which in this case, gives global convergence, no matter how large is your time step, this will always convergence (which does not mean that the global finite element Newton-Raphson is going to converge as well).

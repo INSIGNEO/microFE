@@ -126,7 +126,7 @@ Node_Matrix(:,4) = Node_Matrix(:,4)*element_size;
 nodeCell = [new_col nodeCell];
 
 B=transpose(nodeCell);
-filename = 'nodedata.txt';
+filename = [out_folder, 'nodedata.txt'];
 fid = fopen(filename, 'a');
 fprintf(fid, '%s,%d,%d,%d,%d\n', B{:});
 fclose(fid);
@@ -146,7 +146,7 @@ end
 elementCell = [new_col elementCell];
 
 B=transpose(elementCell);
-filename = 'elementdata.txt';
+filename = [out_folder, 'elementdata.txt'];
 fid = fopen(filename, 'a');
 fprintf(fid, '%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n', B{:});
 fclose(fid);
