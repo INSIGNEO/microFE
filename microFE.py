@@ -89,10 +89,84 @@ class microFE():
             os.system(command)
 
 
+    def convertMesh(self, displacement):
+
+        bnd_file = open("{0}/{1}.bnd".format("parafem_inputs", self.job_name), 'w')
+        d_file = open("{0}/{1}.d".format("parafem_inputs", self.job_name), 'w')
+        fix_file = open("{0}/{1}.fix".format("parafem_inputs", self.job_name), 'w')
+
+        lds_file = open("{0}/{1}.lds".format("parafem_inputs", self.job_name), 'w')
+        lds_file.close() # we do not prescribe loads...right?
+        nlnod = 0 # number of loaded nodes
+
+        d_file.write("*THREE_DIMENSIONAL\n")
+        d_file.write("*NODES\n")
+
+        with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
+            nnod = 0 # number of nodes
+            nres = 0 # number of constrained nodes
+            for node in nodes:
+                n = node.split(',')
+
+                ni = n[1]
+                nx = float(n[2])
+                ny = float(n[3])
+                nz = float(n[4])
+
+                if nz == 0:
+                    b = "{0} 1 1 1\n".format(ni)
+                    bnd_file.write(b)
+
+                    nres += 1
+
+                d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
+                d_file.write(d)
+
+                # TODO: find highest node z-coordinate
+                if nz == 0.02988: # displacement along z-axis
+                    f = "{0} 3 {1}\n".format(ni, displacement)
+                    fix_file.write(f)
+
+                nnod += 1
+
+        d_file.write("*ELEMENTS\n")
+
+        with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
+            nel = 0 # number of elements
+            for element in elems:
+
+                e = element.split(',')
+
+                ei = e[1]
+                e1 = e[2]
+                e2 = e[3]
+                e3 = e[4]
+                e4 = e[5]
+                e5 = e[6]
+                e6 = e[7]
+
+                d = "{0} {1} {2} {3} {4} {5} {6}\n".format(ei, e1, e2, e3, e4, e5, e6)
+                d_file.write(d)
+
+                nel += 1
+
+        bnd_file.close()
+        d_file.close()
+        fix_file.close()
+
+        # TODO: write file.dat
+
+
 if __name__ == "__main__":
 
-    # parse .ini configuration file
+    print "Parse configuration file"
     mFE = microFE(sys.argv[1])
 
-    # use matlab scripts to generate the mesh
+    print "Run mesher"
     mFE.launchMatlabMesher()
+
+    # TODO: get displacement from DVC?
+    displacement = 1e-3
+
+    print "Convert mesh to ParaFEM format"
+    mFE.convertMesh(displacement)
