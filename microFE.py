@@ -1,3 +1,15 @@
+'''
+File: microFE.py
+Author: A Melis
+'''
+
+__author__ = "Alessandro Melis"
+__copyright__ = "Copyright 2017"
+__credits__ = ["A Melis", "Y. Chen"]
+__version__ = "0.0.1"
+__maintainer__ = "Alessandro Melis"
+__email__ = "a.melis@sheffield.ac.uk"
+__status__ = "Prototype"
 
 import os
 import sys
@@ -5,6 +17,9 @@ from ConfigParser import SafeConfigParser
 
 class microFE():
     def __init__(self, file_name):
+        '''
+        Read .ini configuration file and create output directory
+        '''
 
         # parse .ini configuration file
         p = SafeConfigParser()
@@ -51,6 +66,10 @@ class microFE():
 
 
     def launchMatlabMesher(self):
+        '''
+        Launch the matlab mesher. If in HPC environment, prepare and submit a batch job.
+        '''
+
         sep = '" '
         pre = '"'
 
@@ -89,7 +108,17 @@ class microFE():
             os.system(command)
 
 
-    def convertMesh(self, displacement):
+    def convertMesh(self, height, displacement):
+        '''
+        Use matlab output files to create ParaFEM input files.
+
+        Requires
+        --------
+        height : float
+            Z-coordinate of the displaced nodes.
+        displacement : float
+            Displacement assigned to all the mesh upper nodes.
+        '''
 
         bnd_file = open("{0}/{1}.bnd".format("parafem_inputs", self.job_name), 'w')
         d_file = open("{0}/{1}.d".format("parafem_inputs", self.job_name), 'w')
@@ -123,7 +152,7 @@ class microFE():
                 d_file.write(d)
 
                 # TODO: find highest node z-coordinate
-                if nz == 0.02988: # displacement along z-axis
+                if nz == height: # displacement along z-axis
                     f = "{0} 3 {1}\n".format(ni, displacement)
                     fix_file.write(f)
 
@@ -144,8 +173,13 @@ class microFE():
                 e4 = e[5]
                 e5 = e[6]
                 e6 = e[7]
+                e7 = e[8]
+                e8 = e[9]
 
-                d = "{0} {1} {2} {3} {4} {5} {6}\n".format(ei, e1, e2, e3, e4, e5, e6)
+                # http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.Ch11.d/AFEM.Ch11.pdf
+                # Hex8 element p11-4
+                d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei,
+                                                        e1, e2, e3, e4, e5, e6, e7, e8)
                 d_file.write(d)
 
                 nel += 1
@@ -163,10 +197,11 @@ if __name__ == "__main__":
     mFE = microFE(sys.argv[1])
 
     print "Run mesher"
-    mFE.launchMatlabMesher()
+    # mFE.launchMatlabMesher()
 
     # TODO: get displacement from DVC?
+    height = 0.02988
     displacement = 1e-3
 
     print "Convert mesh to ParaFEM format"
-    mFE.convertMesh(displacement)
+    mFE.convertMesh(height, displacement)
