@@ -2,9 +2,7 @@
 
 ## Matlab pipeline
 
-In `m_files\` there is the code for generating FE models with heterogeneous
-material properties. It is made of 6 steps (S1-S6) to be run in sequence,
-while the other functions are called inside the code.
+In `m_files\` there is the code for generating FE models with heterogeneous material properties. It is made of 6 steps (S1-S6) to be run in sequence, while the other functions are called inside the code.
 
 The following inputs are required:
 
@@ -14,27 +12,55 @@ The following inputs are required:
 - threshold for defining bone marrow; defined in `m_files/S1_meshPreparation.m`
 - images of the calibration phantom (750 mgHA/cc and 250 mgHA/cc); stored in `images/Ph250` and `images/Ph750`
 
-Of course the procedure is based on some assumptions. The calibration curve for
-converting grey levels into density should be adapted to the scanner. Also, the
-law for converting bone density into elastic modulus can be adapted to the
-sample/species.
+Of course the procedure is based on some assumptions. The calibration curve for converting grey levels into density should be adapted to the scanner. Also, the law for converting bone density into elastic modulus can be adapted to the sample/species.
 
 The `m_files/main.m` file executes the six steps in one go.
+
+## Configuration file
+
+The meshing process requires the definition of a number of paths and variables. These are defined in a `.ini` configuration file
+
+```
+[directories]
+WORK = <working directory containing the project files>
+M_FILES = <folder containing the compiled matlab code>
+IMG = <microCT images folder>
+CAL1 = <first set of calibration images>
+CAL2 = <second set of calibration images>
+LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
+OUT_DIR = <output folder path>
+
+[images]
+img_names = <microCT images wildcard>
+cal_names = <calibration images wildcard>
+
+[parameters]
+nCells = 1
+Grey_boneThreshold = 18500
+Grey_marrowThreshold = 4500
+Image_Resolution = 0.00996
+
+[job]
+type = <HPC or WORKSTATION>
+name = <job name (HPC only)>
+walltime = <required time allocation (HPC only)>
+budget_code = <budget code (HPC only)>
+```
 
 ## Outputs
 
 After executing steps S1 to S6, the following files are generated
 
-- `m_files/boneChangeData.txt`
-- `m_files/boneModulusData.txt`
-- `m_files/elementdata.txt`
-- `m_files/marrowChangeData.txt`
-- `m_files/marrowModulusData.txt`
-- `m_files/mediumChangeData.txt`
-- `m_files/mediumModulusData.txt`
-- `m_files/nodedata.txt`
+- `m_output/boneChangeData.txt`
+- `m_output/boneModulusData.txt`
+- `m_output/elementdata.txt`
+- `m_output/marrowChangeData.txt`
+- `m_output/marrowModulusData.txt`
+- `m_output/mediumChangeData.txt`
+- `m_output/mediumModulusData.txt`
+- `m_output/nodedata.txt`
 
-These are used to build the FE model in ANSYS.
+These are used to build the FE model.
 
 ## ARCHER deployment
 
