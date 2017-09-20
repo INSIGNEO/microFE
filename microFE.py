@@ -31,10 +31,11 @@ class microFE():
         self.img_names = p.get("images", "img_names")
         self.out_folder = p.get("directories", "out_dir")
 
-        self.nCells = p.get("parameters", "nCells")
-        self.Grey_boneThreshold = p.get("parameters", "Grey_boneThreshold")
-        self.Grey_marrowThreshold = p.get("parameters", "Grey_marrowThreshold")
-        self.Image_Resolution = p.get("parameters", "Image_Resolution")
+        # mesher
+        self.nCells = p.get("mesher_parameters", "nCells")
+        self.Grey_boneThreshold = p.get("mesher_parameters", "Grey_boneThreshold")
+        self.Grey_marrowThreshold = p.get("mesher_parameters", "Grey_marrowThreshold")
+        self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
 
         self.CAL1 = p.get("directories", "cal1")
         self.CAL2 = p.get("directories", "cal2")
@@ -47,12 +48,22 @@ class microFE():
 
         self.job_name = p.get("job", "name")
 
-        self.params = [self.img_folder, self.img_names, self.Grey_boneThreshold,
+        self.mesher_params = [self.img_folder, self.img_names, self.Grey_boneThreshold,
             self.nCells, self.Grey_marrowThreshold, self.Image_Resolution,
             self.calibration_folder_1, self.calibration_folder_2,
             self.calibration_names, self.out_folder]
 
         self.job_type = p.get("job", "type")
+
+        # ParaFEM
+        self.nip = p.get("parafem_parameters", "nip")
+        self.limit = p.get("parafem_parameters", "limit")
+        self.tol = p.get("parafem_parameters", "tol")
+        self.E = p.get("parafem_parameters", "E")
+        self.vP = p.get("parafem_parameters", "vP")
+        self.nloadstep = p.get("parafem_parameters", "nloadstep")
+        self.jump = p.get("parafem_parameters", "jump")
+        self.tol2 = p.get("parafem_parameters", "tol2")
 
         if self.job_type == "HPC":
             self.walltime = p.get("job", "walltime")
@@ -88,7 +99,7 @@ class microFE():
 
             command = "{0}{1}run_main.sh {2} ".format(self.WORK, self.M_FILES,
                                                         self.LD_LIB_PATH)
-            for p in self.params:
+            for p in self.mesher_params:
                 command += pre+str(p)+sep
             line += command
 
@@ -122,18 +133,20 @@ class microFE():
 
         bnd_file = open("{0}/{1}.bnd".format("parafem_inputs", self.job_name), 'w')
         d_file = open("{0}/{1}.d".format("parafem_inputs", self.job_name), 'w')
+
         fix_file = open("{0}/{1}.fix".format("parafem_inputs", self.job_name), 'w')
+        self.nfixnod = 0
 
         lds_file = open("{0}/{1}.lds".format("parafem_inputs", self.job_name), 'w')
         lds_file.close() # we do not prescribe loads...right?
-        nlnod = 0 # number of loaded nodes
+        self.nlnod = 0 # number of loaded nodes
 
         d_file.write("*THREE_DIMENSIONAL\n")
         d_file.write("*NODES\n")
 
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-            nnod = 0 # number of nodes
-            nres = 0 # number of constrained nodes
+            self.nnod = 0 # number of nodes
+            self.nres = 0 # number of constrained nodes
             for node in nodes:
                 n = node.split(',')
 
@@ -146,22 +159,24 @@ class microFE():
                     b = "{0} 1 1 1\n".format(ni)
                     bnd_file.write(b)
 
-                    nres += 1
+                    self.nres += 1
 
                 d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
                 d_file.write(d)
 
-                # TODO: find highest node z-coordinate
-                if nz == height: # displacement along z-axis
+                if nz == height: # displacement only along z-axis
                     f = "{0} 3 {1}\n".format(ni, displacement)
                     fix_file.write(f)
 
-                nnod += 1
+                    self.nfixnod += 1
+
+                self.nnod += 1
 
         d_file.write("*ELEMENTS\n")
+        self.nodpel = 8 # number of nodes per element; Hex8
 
         with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
-            nel = 0 # number of elements
+            self.nel = 0 # number of elements
             for element in elems:
 
                 e = element.split(',')
@@ -177,19 +192,30 @@ class microFE():
                 e8 = e[9]
 
                 # http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.Ch11.d/AFEM.Ch11.pdf
-                # Hex8 element p11-4
+                # Hex8 element p.11-4
                 d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei,
                                                         e1, e2, e3, e4, e5, e6, e7, e8)
                 d_file.write(d)
 
-                nel += 1
+                self.nel += 1
 
         bnd_file.close()
         d_file.close()
         fix_file.close()
 
-        # TODO: write file.dat
 
+    def writeDat(self):
+        with open("{0}/{1}.dat".format("parafem_inputs", self.job_name), 'w') as dat:
+            line = "{0} {1} {2} {3} {4} {5}\n".format(self.nel, self.nnod, self.nres,
+                                                      self.nlnod, self.nfixnod, self.nip)
+            dat.write(line)
+
+            line = "{0} {1} {2} {3}\n".format(self.limit, self.tol, self.E, self.vP)
+            dat.write(line)
+
+            dat.write("{}\n".format(self.nodpel))
+            dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
+            dat.write("{}".format(self.tol2))
 
 if __name__ == "__main__":
 
@@ -199,9 +225,11 @@ if __name__ == "__main__":
     print "Run mesher"
     # mFE.launchMatlabMesher()
 
-    # TODO: get displacement from DVC?
+    # TODO: find highest node z-coordinate
+    # TODO: get displacement from DVC
     height = 0.02988
     displacement = 1e-3
 
     print "Convert mesh to ParaFEM format"
     mFE.convertMesh(height, displacement)
+    mFE.writeDat()

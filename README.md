@@ -34,7 +34,7 @@ OUT_DIR = <output folder path>
 img_names = <microCT images wildcard>
 cal_names = <calibration images wildcard>
 
-[parameters]
+[mesher_parameters]
 nCells = 1
 Grey_boneThreshold = 18500
 Grey_marrowThreshold = 4500
@@ -45,6 +45,16 @@ type = <HPC or WORKSTATION>
 name = <job name (HPC only)>
 walltime = <required time allocation (HPC only)>
 budget_code = <budget code (HPC only)>
+
+[parafem_parameters]
+nip = <number of interpolation points
+limit = <number of preconditioned conjugate gradient (PCG) iterations>
+tol = <convergence tolerance of PCG>
+E = <Young's modulus>
+vP = <Poisson's ratio>
+nloadstep = <time increment per load step>
+jump = <?>
+tol2 = <convergence tolerance of the Newton-Raphson scheme>
 ```
 
 ## Outputs
