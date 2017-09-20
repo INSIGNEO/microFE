@@ -173,7 +173,8 @@ class microFE():
                 self.nnod += 1
 
         d_file.write("*ELEMENTS\n")
-        self.nodpel = 8 # number of nodes per element; Hex8
+        self.nodpel = 8 # number of nodes per element; Hex8 element p.11-4
+        # http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.Ch11.d/AFEM.Ch11.pdf
 
         with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
             self.nel = 0 # number of elements
@@ -181,7 +182,9 @@ class microFE():
 
                 e = element.split(',')
 
-                ei = e[1]
+                ei = e[1] # element index
+
+                # element nodes indices
                 e1 = e[2]
                 e2 = e[3]
                 e3 = e[4]
@@ -191,8 +194,14 @@ class microFE():
                 e7 = e[8]
                 e8 = e[9]
 
-                # http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.Ch11.d/AFEM.Ch11.pdf
-                # Hex8 element p.11-4
+                #    8=======7
+                #   /|      /|
+                #  / |     / |
+                # 5=======6--3
+                # | /     | /
+                # |/      |/
+                # 1=======2
+
                 d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei,
                                                         e1, e2, e3, e4, e5, e6, e7, e8)
                 d_file.write(d)
@@ -216,6 +225,7 @@ class microFE():
             dat.write("{}\n".format(self.nodpel))
             dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
             dat.write("{}".format(self.tol2))
+
 
 if __name__ == "__main__":
 
