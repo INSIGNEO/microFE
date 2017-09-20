@@ -55,7 +55,7 @@ tol = <convergence tolerance of PCG>
 E = <Young's modulus>
 vP = <Poisson's ratio>
 nloadstep = <time increment per load step>
-jump = <?>
+jump = <interval in which the output files are plotted>
 tol2 = <convergence tolerance of the Newton-Raphson scheme>
 ```
 
@@ -101,7 +101,7 @@ Launch the pipeline as
 python microFE.py microFE.ini
 ```
 
-## ParaFE instructions from Francesc
+## ParaFE instructions (from Francesc)
 
 ParaFEM uses several input files to define the geometry, boundary conditions and parameters for the simulation. These are defined in the following files:
 
@@ -113,7 +113,13 @@ ParaFEM uses several input files to define the geometry, boundary conditions and
 
 - [x] XXXX.lds, which contains the __prescribed loads__. Each loaded node should be indicated in a different line such as "nnod lx ly lz", where "nnod" is the node number, "lx" is the load in the x-coordinate, "ly" is the load in the y-coordinate, and "lz" is the load in the z-coordinate.
 
-- [ ] To assign __personalised material properties__, it would be helpful if you are familiar with the `umat` format in ABAQUS or ANSYS. In brief, you need to provide the stress (Kirchhoff stress) update, separate the strains in case of an elastoplastic materials (elastic from plastic, logarithmic strains), and calculate the tangent operator (derivatives of Kirchhoff stresses vs logarithmic strains). I chose this format because it can be integrated exactly as in small-strain cases, making the whole procedure a lot easier. An example is in `parafem_inputs/umat_EE_primal_CPPM.f90`. This is an isotropic linear elastic material (Hencky hyperelasticity in large strain) with an eccentric ellipsoid yield surface (it is usable for trabecular bone at the macroscopic level). The constants are defined in the beginning of the code, and are Young's modulus, Poisson's ratio, uniaxial tensile limit, uniaxial compressive limit, zeta defines the shape of the yield surface (it ranges from 0.5 where the surface is a cone, Drucker-Prager, to -1, where it looks like two parallel planes; do not use it with 0.5 as there is no "check for singularity" in this subroutine). The input data to this subroutine are logarithmic strains, and basically any associated operations to calculate stresses should give you Kirchhoff stresses. The first lines until "! Determine if there is yielding" perform the elastic trial stage of a predictor-corrector strategy for elastoplastic materials. If some measure of equivalent stress surpasses the yield limit, then a corrector procedure follows. The plastic return-mapping is performed with a Newton-Raphson coupled with a Line Search, which in this case, gives global convergence, no matter how large is your time step, this will always convergence (which does not mean that the global finite element Newton-Raphson is going to converge as well).
+- [ ] To assign __personalised material properties__, it would be helpful if you are familiar with the `umat` format in ABAQUS or ANSYS. In brief, you need to provide the stress (Kirchhoff stress) update, separate the strains in case of an elastoplastic materials (elastic from plastic, logarithmic strains), and calculate the tangent operator (derivatives of Kirchhoff stresses vs logarithmic strains).
+
+I chose this format because it can be integrated exactly as in small-strain cases, making the whole procedure a lot easier. An example is in `parafem_inputs/umat_EE_primal_CPPM.f90`. This is an isotropic linear elastic material (Hencky hyperelasticity in large strain) with an eccentric ellipsoid yield surface (it is usable for trabecular bone at the macroscopic level). The constants are defined in the beginning of the code, and are Young's modulus, Poisson's ratio, uniaxial tensile limit, uniaxial compressive limit, zeta defines the shape of the yield surface (it ranges from 0.5 where the surface is a cone, Drucker-Prager, to -1, where it looks like two parallel planes; do not use it with 0.5 as there is no "check for singularity" in this subroutine). The input data to this subroutine are logarithmic strains, and basically any associated operations to calculate stresses should give you Kirchhoff stresses. The first lines until "! Determine if there is yielding" perform the elastic trial stage of a predictor-corrector strategy for elastoplastic materials. If some measure of equivalent stress surpasses the yield limit, then a corrector procedure follows. The plastic return-mapping is performed with a Newton-Raphson coupled with a Line Search, which in this case, gives global convergence, no matter how large is your time step, this will always convergence (which does not mean that the global finite element Newton-Raphson is going to converge as well).
+
+[...]
+
+I imagine that, according to what you are saying, you want to use linear properties for all your materials (marrow, bone...), and that each of them has a different set of linear properties (Young's Modulus and Poisson's ratio). If this is the case, what we could do is just employ a single, linear, umat for all the different materials and change only the two parameters in the umat for each element. I did not implement "element-dependent properties" in the code, but it is super-straightforward to do it (it would take a few hours only).
 
 - [x] XXXX.dat, which contains the __parameters of the simulation__. The first line should read as "nel nnod nres nlnod nfixnod nip", the second line should read as "limit tol e v", the third line should read as "nodpel", the fourth line should read as "nloadstep, jump", and the fifth line should read as "tol2". These stand for, respectively, the number of elements in the mesh, the number of nodes in the mesh, the number of restrained nodes, the number of loaded nodes, the number of integration points, the number of preconditioned conjugate gradient (PCG) iterations, the convergence tolerance of PCG, Young's modulus, Poisson's ratio, the number of nodes per element, the number of load steps, the time increment per load step and the convergence tolerance of the Newton-Raphson scheme. At this moment, even though they need to be included, "e", "v", "nloadstep" and "jump" are place-holders as they are indicated elsewhere.
 
