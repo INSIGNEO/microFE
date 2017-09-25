@@ -25,11 +25,14 @@ class microFE():
         p = SafeConfigParser()
         p.read(sys.argv[1])
 
+        # CT images
         self.WORK = p.get("directories", "work")
         self.IMG = p.get("directories", "img")
         self.img_folder = "{0}{1}".format(self.WORK, self.IMG)
         self.img_names = p.get("images", "img_names")
         self.out_folder = p.get("directories", "out_dir")
+
+        assert os.path.isdir(self.img_folder), "IMG folder does not exist"
 
         # mesher
         self.nCells = p.get("mesher_parameters", "nCells")
@@ -37,14 +40,20 @@ class microFE():
         self.Grey_marrowThreshold = p.get("mesher_parameters", "Grey_marrowThreshold")
         self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
 
+        # calibration
         self.CAL1 = p.get("directories", "cal1")
         self.CAL2 = p.get("directories", "cal2")
         self.calibration_folder_1 = "{0}{1}".format(self.WORK, self.CAL1)
         self.calibration_folder_2 = "{0}{1}".format(self.WORK, self.CAL2)
         self.calibration_names = p.get("images", "cal_names")
 
+        assert os.path.isdir(self.calibration_folder_1), "CAL1 folder does not exist"
+        assert os.path.isdir(self.calibration_folder_2), "CAL2 folder does not exist"
+
         self.M_FILES = p.get("directories", "m_files")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
+
+        assert os.path.isdir(self.M_FILES), "M_FILES folder does not exist"
 
         self.job_name = p.get("job", "name")
 
