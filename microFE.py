@@ -26,34 +26,16 @@ class microFE():
         p.read(sys.argv[1])
 
         # CT images
-        # self.WORK = p.get("directories", "work")
-        # self.IMG = p.get("directories", "img")
-        # self.img_folder = "{0}{1}".format(self.WORK, self.IMG)
         self.file_folder = p.get("directories", "file_folder")
         self.binary_folder = p.get("directories", "binary_folder")
         self.out_folder = p.get("directories", "out_dir")
-
         self.img_names = p.get("images", "img_names")
 
         assert os.path.isdir(self.file_folder), "IMG folder does not exist"
 
         # mesher
-        # self.nCells = p.get("mesher_parameters", "nCells")
-        # self.Grey_boneThreshold = p.get("mesher_parameters", "Grey_boneThreshold")
-        # self.Grey_marrowThreshold = p.get("mesher_parameters", "Grey_marrowThreshold")
         self.threshold = p.get("mesher_parameters", "threshold")
         self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
-
-        # # calibration
-        # self.CAL1 = p.get("directories", "cal1")
-        # self.CAL2 = p.get("directories", "cal2")
-        # self.calibration_folder_1 = "{0}{1}".format(self.WORK, self.CAL1)
-        # self.calibration_folder_2 = "{0}{1}".format(self.WORK, self.CAL2)
-        # self.calibration_names = p.get("images", "cal_names")
-        #
-        # assert os.path.isdir(self.calibration_folder_1), "CAL1 folder does not exist"
-        # assert os.path.isdir(self.calibration_folder_2), "CAL2 folder does not exist"
-
         self.M_FILES = p.get("directories", "m_files")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
 
@@ -61,10 +43,6 @@ class microFE():
 
         self.job_name = p.get("job", "name")
 
-        # self.mesher_params = [self.img_folder, self.img_names, self.Grey_boneThreshold,
-        #     self.nCells, self.Grey_marrowThreshold, self.Image_Resolution,
-        #     self.calibration_folder_1, self.calibration_folder_2,
-        #     self.calibration_names, self.out_folder]
         self.mesher_params = [self.file_folder, self.img_names, self.binary_folder,
             self.Image_Resolution, self.threshold, self.out_folder]
 
@@ -115,8 +93,7 @@ class microFE():
             line+="cd $PBS_O_WORKDIR \n"
             line+="module load mcr/9.0.1 \n"
 
-            command = "{0}{1}run_main.sh {2} ".format(self.WORK, self.M_FILES,
-                                                        self.LD_LIB_PATH)
+            command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
             for p in self.mesher_params:
                 command += pre+str(p)+sep
             line += command
