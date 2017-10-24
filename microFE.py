@@ -26,29 +26,33 @@ class microFE():
         p.read(sys.argv[1])
 
         # CT images
-        self.WORK = p.get("directories", "work")
-        self.IMG = p.get("directories", "img")
-        self.img_folder = "{0}{1}".format(self.WORK, self.IMG)
-        self.img_names = p.get("images", "img_names")
+        # self.WORK = p.get("directories", "work")
+        # self.IMG = p.get("directories", "img")
+        # self.img_folder = "{0}{1}".format(self.WORK, self.IMG)
+        self.file_folder = p.get("directories", "file_folder")
+        self.binary_folder = p.get("directories", "binary_folder")
         self.out_folder = p.get("directories", "out_dir")
 
-        assert os.path.isdir(self.img_folder), "IMG folder does not exist"
+        self.img_names = p.get("images", "img_names")
+
+        assert os.path.isdir(self.file_folder), "IMG folder does not exist"
 
         # mesher
-        self.nCells = p.get("mesher_parameters", "nCells")
-        self.Grey_boneThreshold = p.get("mesher_parameters", "Grey_boneThreshold")
-        self.Grey_marrowThreshold = p.get("mesher_parameters", "Grey_marrowThreshold")
+        # self.nCells = p.get("mesher_parameters", "nCells")
+        # self.Grey_boneThreshold = p.get("mesher_parameters", "Grey_boneThreshold")
+        # self.Grey_marrowThreshold = p.get("mesher_parameters", "Grey_marrowThreshold")
+        self.threshold = p.get("mesher_parameters", "threshold")
         self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
 
-        # calibration
-        self.CAL1 = p.get("directories", "cal1")
-        self.CAL2 = p.get("directories", "cal2")
-        self.calibration_folder_1 = "{0}{1}".format(self.WORK, self.CAL1)
-        self.calibration_folder_2 = "{0}{1}".format(self.WORK, self.CAL2)
-        self.calibration_names = p.get("images", "cal_names")
-
-        assert os.path.isdir(self.calibration_folder_1), "CAL1 folder does not exist"
-        assert os.path.isdir(self.calibration_folder_2), "CAL2 folder does not exist"
+        # # calibration
+        # self.CAL1 = p.get("directories", "cal1")
+        # self.CAL2 = p.get("directories", "cal2")
+        # self.calibration_folder_1 = "{0}{1}".format(self.WORK, self.CAL1)
+        # self.calibration_folder_2 = "{0}{1}".format(self.WORK, self.CAL2)
+        # self.calibration_names = p.get("images", "cal_names")
+        #
+        # assert os.path.isdir(self.calibration_folder_1), "CAL1 folder does not exist"
+        # assert os.path.isdir(self.calibration_folder_2), "CAL2 folder does not exist"
 
         self.M_FILES = p.get("directories", "m_files")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
@@ -57,10 +61,12 @@ class microFE():
 
         self.job_name = p.get("job", "name")
 
-        self.mesher_params = [self.img_folder, self.img_names, self.Grey_boneThreshold,
-            self.nCells, self.Grey_marrowThreshold, self.Image_Resolution,
-            self.calibration_folder_1, self.calibration_folder_2,
-            self.calibration_names, self.out_folder]
+        # self.mesher_params = [self.img_folder, self.img_names, self.Grey_boneThreshold,
+        #     self.nCells, self.Grey_marrowThreshold, self.Image_Resolution,
+        #     self.calibration_folder_1, self.calibration_folder_2,
+        #     self.calibration_names, self.out_folder]
+        self.mesher_params = [self.file_folder, self.img_names, self.binary_folder,
+            self.Image_Resolution, self.threshold, self.out_folder]
 
         self.job_type = p.get("job", "type")
 
@@ -82,6 +88,9 @@ class microFE():
         if not os.path.isdir(self.out_folder):
             os.mkdir(self.out_folder)
 
+        if not os.path.isdir(self.binary_folder):
+            os.mkdir(self.binary_folder)
+
         return
 
 
@@ -100,11 +109,11 @@ class microFE():
             line="#!/bin/bash --login \n"
             line+="#PBS -N {0} \n".format(self.job_name)
             line+="#PBS -l select=serial=true:ncpus=1 \n"
-            line+="#PBS -l walltime=01:00:00 \n".format(self.walltime)
-            line+="#PBS -A d137-me1ame \n".format(self.budget_code)
+            line+="#PBS -l walltime={0} \n".format(self.walltime)
+            line+="#PBS -A {0} \n".format(self.budget_code)
             line+="export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR) \n"
             line+="cd $PBS_O_WORKDIR \n"
-            line+="module load mcr/9.0 \n"
+            line+="module load mcr/9.0.1 \n"
 
             command = "{0}{1}run_main.sh {2} ".format(self.WORK, self.M_FILES,
                                                         self.LD_LIB_PATH)
@@ -119,9 +128,8 @@ class microFE():
 
         # launch mesher on workstation
         else:
-            command = "{0}{1}run_main.sh {2} ".format(self.WORK, self.M_FILES,
-                                                        self.LD_LIB_PATH)
-            for p in self.params:
+            command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
+            for p in self.mesher_params:
                 command += pre+str(p)+sep
 
             print command
@@ -188,20 +196,21 @@ class microFE():
         with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
             self.nel = 0 # number of elements
             for element in elems:
+                self.nel += 1
 
                 e = element.split(',')
 
-                ei = e[1] # element index
+                ei = self.nel # element index
 
                 # element nodes indices
-                e1 = e[2]
-                e2 = e[3]
-                e3 = e[4]
-                e4 = e[5]
-                e5 = e[6]
-                e6 = e[7]
-                e7 = e[8]
-                e8 = e[9]
+                e1 = e[0]
+                e2 = e[1]
+                e3 = e[2]
+                e4 = e[3]
+                e5 = e[4]
+                e6 = e[5]
+                e7 = e[6]
+                e8 = e[7]
 
                 #    8=======7
                 #   /|      /|
@@ -214,8 +223,6 @@ class microFE():
                 d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei,
                                                         e1, e2, e3, e4, e5, e6, e7, e8)
                 d_file.write(d)
-
-                self.nel += 1
 
         bnd_file.close()
         d_file.close()
@@ -242,7 +249,7 @@ if __name__ == "__main__":
     mFE = microFE(sys.argv[1])
 
     print "Run mesher"
-    # mFE.launchMatlabMesher()
+    mFE.launchMatlabMesher()
 
     # TODO: find highest node z-coordinate
     # TODO: get displacement from DVC
