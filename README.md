@@ -1,4 +1,6 @@
-# microFE
+# microFE heterogeneous
+
+This branch contains the code for the heterogeneous microFE model analysis.
 
 ## Matlab pipeline
 
