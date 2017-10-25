@@ -32,6 +32,7 @@ class microFE():
         self.file_folder = p.get("directories", "file_folder")
         self.binary_folder = p.get("directories", "binary_folder")
         self.out_folder = p.get("directories", "out_dir")
+        self.parafem_dir = p.get("directories", "parafem_files_dir")
         self.img_names = p.get("images", "img_names")
 
         assert os.path.isdir(self.file_folder), "IMG folder does not exist"
@@ -59,12 +60,15 @@ class microFE():
         self.jump = p.get("parafem_parameters", "jump")
         self.tol2 = p.get("parafem_parameters", "tol2")
 
-        # create output folder
+        # create output folders
         if not os.path.isdir(self.out_folder):
             os.mkdir(self.out_folder)
 
         if not os.path.isdir(self.binary_folder):
             os.mkdir(self.binary_folder)
+
+        if not os.path.isdir(self.parafem_dir):
+            os.mkdir(self.parafem_dir)
 
         return
 
@@ -97,13 +101,13 @@ class microFE():
             Displacement assigned to all the mesh upper nodes.
         '''
 
-        bnd_file = open("{0}/{1}.bnd".format("parafem_inputs", self.job_name), 'w')
-        d_file = open("{0}/{1}.d".format("parafem_inputs", self.job_name), 'w')
+        bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
+        d_file = open("{0}/{1}.d".format(self.parafem_dir, self.job_name), 'w')
 
-        fix_file = open("{0}/{1}.fix".format("parafem_inputs", self.job_name), 'w')
+        fix_file = open("{0}/{1}.fix".format(self.parafem_dir, self.job_name), 'w')
         self.nfixnod = 0
 
-        lds_file = open("{0}/{1}.lds".format("parafem_inputs", self.job_name), 'w')
+        lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
         lds_file.close() # we do not prescribe loads...right?
         self.nlnod = 0 # number of loaded nodes
 
@@ -179,7 +183,7 @@ class microFE():
 
 
     def writeDat(self):
-        with open("{0}/{1}.dat".format("parafem_inputs", self.job_name), 'w') as dat:
+        with open("{0}/{1}.dat".format(self.parafem_dir, self.job_name), 'w') as dat:
             line = "{0} {1} {2} {3} {4} {5}\n".format(self.nel, self.nnod, self.nres,
                                                       self.nlnod, self.nfixnod, self.nip)
             dat.write(line)
@@ -199,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--cfgfile", help="configuration file name", dest="cfgfile")
     parser.add_argument("-r", "--runcmd", help="run command 'mesh' or 'convert'",
                         dest="cmd")
+
     args = parser.parse_args()
 
     print "Parse configuration file"
