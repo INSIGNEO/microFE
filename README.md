@@ -22,24 +22,26 @@ The meshing process requires the definition of a number of paths and variables. 
 
 ```
 [directories]
+WORK = <working directory containing the project files>
 M_FILES = <folder containing the compiled matlab code>
-FILE_FOLDER = <microCT images folder>
-BINARY_FOLDER = <output binary images folder>
-OUT_DIR = <output folder path>
+IMG = <microCT images folder>
+CAL1 = <first set of calibration images>
+CAL2 = <second set of calibration images>
 LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
+OUT_DIR = <output folder path>
 
 [images]
-img_names = <microCT images wildcard, e.g. Scan1_****.tif>
+img_names = <microCT images wildcard>
+cal_names = <calibration images wildcard>
 
 [mesher_parameters]
-threshold = 18500
+nCells = 1
+Grey_boneThreshold = 18500
+Grey_marrowThreshold = 4500
 Image_Resolution = 0.00996
 
 [job]
-type = <HPC or WORKSTATION>
 name = <job name>
-walltime = <required time allocation (HPC only)>
-budget_code = <budget code (HPC only)>
 
 [parafem_parameters]
 nip = <number of interpolation points
@@ -48,7 +50,7 @@ tol = <convergence tolerance of PCG>
 E = <Young's modulus>
 vP = <Poisson's ratio>
 nloadstep = <time increment per load step>
-jump = <interval in which the output files are plotted>
+jump = <?>
 tol2 = <convergence tolerance of the Newton-Raphson scheme>
 ```
 
@@ -72,6 +74,7 @@ microFE/
 |   +-- run_main.sh
 +-- microFE.py
 +-- microFE-archer.ini
++-- microFE_job.pbs
 +-- images/
 |   +-- ConvergenceCube/
 |   |   +--- Scan_****.tif
@@ -80,7 +83,7 @@ microFE/
 Launch the pipeline as
 
 ```bash
-python microFE.py microFE.ini
+$ qsub microFE_job.pbs
 ```
 
 ## ParaFE instructions (from Francesc)

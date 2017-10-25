@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 File: microFE.py
 Author: A Melis
@@ -13,6 +15,7 @@ __status__ = "Prototype"
 
 import os
 import sys
+from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
 class microFE():
@@ -23,7 +26,7 @@ class microFE():
 
         # parse .ini configuration file
         p = SafeConfigParser()
-        p.read(sys.argv[1])
+        p.read(file_name)
 
         # CT images
         self.file_folder = p.get("directories", "file_folder")
@@ -46,8 +49,6 @@ class microFE():
         self.mesher_params = [self.file_folder, self.img_names, self.binary_folder,
             self.Image_Resolution, self.threshold, self.out_folder]
 
-        self.job_type = p.get("job", "type")
-
         # ParaFEM
         self.nip = p.get("parafem_parameters", "nip")
         self.limit = p.get("parafem_parameters", "limit")
@@ -57,10 +58,6 @@ class microFE():
         self.nloadstep = p.get("parafem_parameters", "nloadstep")
         self.jump = p.get("parafem_parameters", "jump")
         self.tol2 = p.get("parafem_parameters", "tol2")
-
-        if self.job_type == "HPC":
-            self.walltime = p.get("job", "walltime")
-            self.budget_code = p.get("job", "budget_code")
 
         # create output folder
         if not os.path.isdir(self.out_folder):
@@ -74,43 +71,18 @@ class microFE():
 
     def launchMatlabMesher(self):
         '''
-        Launch the matlab mesher. If in HPC environment, prepare and submit a batch job.
+        Launch the matlab mesher.
         '''
 
         sep = '" '
         pre = '"'
 
-        # write batch script for ARCHER
-        if self.job_type == "HPC":
-            microFE_file = "microFE_{0}.sh".format(self.job_name)
+        command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
+        for p in self.mesher_params:
+            command += pre+str(p)+sep
 
-            line="#!/bin/bash --login \n"
-            line+="#PBS -N {0} \n".format(self.job_name)
-            line+="#PBS -l select=serial=true:ncpus=1 \n"
-            line+="#PBS -l walltime={0} \n".format(self.walltime)
-            line+="#PBS -A {0} \n".format(self.budget_code)
-            line+="export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR) \n"
-            line+="cd $PBS_O_WORKDIR \n"
-            line+="module load mcr/9.0.1 \n"
-
-            command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
-            for p in self.mesher_params:
-                command += pre+str(p)+sep
-            line += command
-
-            with open(microFE_file,"w") as f:
-                f.write(line)
-
-            os.system("qsub {0}".format(microFE_file))
-
-        # launch mesher on workstation
-        else:
-            command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
-            for p in self.mesher_params:
-                command += pre+str(p)+sep
-
-            print command
-            os.system(command)
+        print command
+        os.system(command)
 
 
     def convertMesh(self, height, displacement):
@@ -222,17 +194,27 @@ class microFE():
 
 if __name__ == "__main__":
 
+    parser = ArgumentParser()
+
+    parser.add_argument("-c", "--cfgfile", help="configuration file name", dest="cfgfile")
+    parser.add_argument("-r", "--runcmd", help="run command 'mesh' or 'convert'",
+                        dest="cmd")
+    args = parser.parse_args()
+
     print "Parse configuration file"
-    mFE = microFE(sys.argv[1])
+    mFE = microFE(args.cfgfile)
 
-    print "Run mesher"
-    mFE.launchMatlabMesher()
+    if args.cmd == "mesh":
+        print "Run mesher"
+        mFE.launchMatlabMesher()
 
-    # TODO: find highest node z-coordinate
-    # TODO: get displacement from DVC
-    height = 0.02988
-    displacement = 1e-3
+    elif args.cmd == "convert":
 
-    print "Convert mesh to ParaFEM format"
-    mFE.convertMesh(height, displacement)
-    mFE.writeDat()
+        # TODO: find highest node z-coordinate
+        # TODO: get displacement from DVC
+        height = 0.02988
+        displacement = 1e-3
+
+        print "Convert mesh to ParaFEM format"
+        mFE.convertMesh(height, displacement)
+        mFE.writeDat()
