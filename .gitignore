@@ -15,8 +15,6 @@ m_files/mainm.m
 parafem_inputs/*
 Subsample.mat
 microFE_microFE_job_test.sh
-m_files/main
-m_files/run_main.sh
 microFE_local.ini
 microFE.ini
 microFE-archer.ini

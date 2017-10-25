@@ -65,7 +65,7 @@ These are used to build the FE model.
 
 In `$WORK`, there is a `microFE` folder organised as
 
-```bash
+```
 microFE/
 +-- m_files/
 |   +-- main
