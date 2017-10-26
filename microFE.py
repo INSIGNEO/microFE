@@ -191,9 +191,9 @@ class microFE():
             line = "{0} {1} {2} {3}\n".format(self.limit, self.tol, self.E, self.vP)
             dat.write(line)
 
-            dat.write("{}\n".format(self.nodpel))
+            dat.write("{0}\n".format(self.nodpel))
             dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
-            dat.write("{}".format(self.tol2))
+            dat.write("{0}".format(self.tol2))
 
 
 if __name__ == "__main__":
