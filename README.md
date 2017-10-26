@@ -73,7 +73,7 @@ microFE/
 +-- microFE_job.pbs
 +-- images/
 |   +-- ConvergenceCube/
-|   |   +--- Scan_****.tif
+|   |   +--- Scan1_****.tif
 ```
 
 Launch the pipeline as
