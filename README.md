@@ -1,20 +1,18 @@
 # microFE
 
+This branch contains the homogeneous microFE model code.
+
 ## Matlab pipeline
 
-In `m_files\` there is the code for generating FE models with heterogeneous material properties. It is made of 6 steps (S1-S6) to be run in sequence, while the other functions are called inside the code.
+In `m_files\` there is the code for generating FE models with cartesian mesh and homogeneous material properties. The original mesher code is in `/m_files/mesher.m`.
 
 The following inputs are required:
 
 - greyscale images (`.tiff`) of the sample; these are in `images/ConvergenceCube/`
-- voxel size; defined in `m_files/S2_AnsysMesheStreamout.m`
-- threshold for defining bone tissue; defined in `m_files/S1_meshPreparation.m`
-- threshold for defining bone marrow; defined in `m_files/S1_meshPreparation.m`
-- images of the calibration phantom (750 mgHA/cc and 250 mgHA/cc); stored in `images/Ph250` and `images/Ph750`
+- voxel size (`Image_Resolution`);
+- threshold for defining bone tissue;
 
-Of course the procedure is based on some assumptions. The calibration curve for converting grey levels into density should be adapted to the scanner. Also, the law for converting bone density into elastic modulus can be adapted to the sample/species.
-
-The `m_files/main.m` file executes the six steps in one go.
+The `m_files/main.m` file executes the mesher.
 
 The script in `m_files/compile.sh` compiles the matlab scripts with the matlab compiler. Compiled files can be run with the matlab runtime environment (available on ARCHER).
 
@@ -24,29 +22,22 @@ The meshing process requires the definition of a number of paths and variables. 
 
 ```
 [directories]
-WORK = <working directory containing the project files>
 M_FILES = <folder containing the compiled matlab code>
-IMG = <microCT images folder>
-CAL1 = <first set of calibration images>
-CAL2 = <second set of calibration images>
-LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
+FILE_FOLDER = <microCT images folder>
+BINARY_FOLDER = <folder where to save binary images>
 OUT_DIR = <output folder path>
+PARAFEM_FILES_DIR = <ParaFEM input files directory>
+LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
 
 [images]
-img_names = <microCT images wildcard, e.g. Scan1_****>
-cal_names = <calibration images wildcard, e.g. Ph****>
+img_names = <microCT images wildcard>
 
 [mesher_parameters]
-nCells = 1
-Grey_boneThreshold = 18500
-Grey_marrowThreshold = 4500
+threshold = 18500
 Image_Resolution = 0.00996
 
 [job]
-type = <HPC or WORKSTATION>
-name = <job name (HPC only)>
-walltime = <required time allocation (HPC only)>
-budget_code = <budget code (HPC only)>
+name = <job name>
 
 [parafem_parameters]
 nip = <number of interpolation points
@@ -55,7 +46,7 @@ tol = <convergence tolerance of PCG>
 E = <Young's modulus>
 vP = <Poisson's ratio>
 nloadstep = <time increment per load step>
-jump = <interval in which the output files are plotted>
+jump = <?>
 tol2 = <convergence tolerance of the Newton-Raphson scheme>
 ```
 
@@ -63,13 +54,7 @@ tol2 = <convergence tolerance of the Newton-Raphson scheme>
 
 After executing steps S1 to S6, the following files are generated
 
-- `m_output/boneChangeData.txt`
-- `m_output/boneModulusData.txt`
 - `m_output/elementdata.txt`
-- `m_output/marrowChangeData.txt`
-- `m_output/marrowModulusData.txt`
-- `m_output/mediumChangeData.txt`
-- `m_output/mediumModulusData.txt`
 - `m_output/nodedata.txt`
 
 These are used to build the FE model.
@@ -78,27 +63,23 @@ These are used to build the FE model.
 
 In `$WORK`, there is a `microFE` folder organised as
 
-```bash
+```
 microFE/
-|-- m_files/
-|   |-- main
-|   |-- run_main.sh
-|-- microFE.py
-|-- microFE-archer.ini
-|-- images/
-|   |-- ConvergenceCube/
-|   |   |--- Scan_****.tif
-|   |-- Ph250/
-|   |   |--- Ph****.tif
-|   |-- Ph750/
-|   |   |--- Ph****.tif
-
++-- m_files/
+|   +-- main
+|   +-- run_main.sh
++-- microFE.py
++-- microFE-archer.ini
++-- microFE_job.pbs
++-- images/
+|   +-- ConvergenceCube/
+|   |   +--- Scan1_****.tif
 ```
 
 Launch the pipeline as
 
 ```bash
-python microFE.py microFE.ini
+$ qsub microFE_job.pbs
 ```
 
 ## ParaFE instructions (from Francesc)
