@@ -1,7 +1,5 @@
 # microFE
 
-This branch contains the homogeneous microFE model code.
-
 ## Matlab pipeline
 
 In `m_files\` there is the code for generating FE models with cartesian mesh and homogeneous material properties. The original mesher code is in `/m_files/mesher.m`.
@@ -50,14 +48,21 @@ jump = <?>
 tol2 = <convergence tolerance of the Newton-Raphson scheme>
 ```
 
+## Usage
+
+```bash
+$ python microFE.py -c cfg_file.ini -r mesh
+$ python microFE.py -c cfg_file.ini -r convert
+```
+
 ## Outputs
 
-After executing steps S1 to S6, the following files are generated
+After executing the mesher, the files needed to generate the FE model are stored as:
 
 - `m_output/elementdata.txt`
 - `m_output/nodedata.txt`
 
-These are used to build the FE model.
+where `m_output` folder is specified in the configuration file.
 
 ## ARCHER deployment
 
