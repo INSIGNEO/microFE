@@ -42,7 +42,7 @@ class microFE():
         self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
         self.M_FILES = p.get("directories", "m_files")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
-        self.perc_displacement = p.get("mesher_parameters", "perc_displacement")
+        self.perc_displacement = float(p.get("mesher_parameters", "perc_displacement"))
 
         assert os.path.isdir(self.M_FILES), "M_FILES folder does not exist"
 
