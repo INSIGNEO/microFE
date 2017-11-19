@@ -102,7 +102,7 @@ class microFE():
         self.nfixnod = 0
 
         lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
-        lds_file.close() # we do not prescribe loads...right?
+        # lds_file.close() # we do not prescribe loads...right?
         self.nlnod = 0 # number of loaded nodes
 
         d_file.write("*THREE_DIMENSIONAL\n")
@@ -118,6 +118,9 @@ class microFE():
 
                 if nz > height:
                     height = nz
+
+                lds_file.write("{0} 0 0 0\n".format(n[1]))
+        lds_file.close()
         displacement = height * (100.0 - self.perc_displacement)/100.0
 
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
