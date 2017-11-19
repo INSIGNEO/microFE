@@ -162,14 +162,14 @@ class microFE():
                 ei = self.nel # element index
 
                 # element nodes indices
-                e1 = e[0+1]
-                e2 = e[1+1]
-                e3 = e[2+1]
-                e4 = e[3+1]
-                e5 = e[4+1]
-                e6 = e[5+1]
-                e7 = e[6+1]
-                e8 = e[7+1]
+                e1 = e[1]
+                e2 = e[2]
+                e3 = e[3]
+                e4 = e[4]
+                e5 = e[5]
+                e6 = e[6]
+                e7 = e[7]
+                e8 = e[8]
 
                 #    8=======7
                 #   /|      /|
