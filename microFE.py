@@ -90,14 +90,9 @@ class microFE():
         os.system(command)
 
 
-    def convertMesh(self, height, perc_displacement):
+    def convertMesh(self):
         '''
         Use matlab output files to create ParaFEM input files.
-
-        Requires
-        --------
-        perc_displacement : float
-            Percentage displacement assigned to all the mesh upper nodes.
         '''
 
         bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
@@ -228,8 +223,7 @@ if __name__ == "__main__":
 
         # TODO: find highest node z-coordinate
         # TODO: get displacement from DVC
-        perc_displacement = 5. #%
 
         print "Convert mesh to ParaFEM format"
-        mFE.convertMesh(perc_displacement)
+        mFE.convertMesh()
         mFE.writeDat()
