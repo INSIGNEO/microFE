@@ -42,6 +42,7 @@ class microFE():
         self.Image_Resolution = p.get("mesher_parameters", "Image_Resolution")
         self.M_FILES = p.get("directories", "m_files")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
+        self.perc_displacement = p.get("mesher_parameters", "perc_displacement")
 
         assert os.path.isdir(self.M_FILES), "M_FILES folder does not exist"
 
@@ -89,16 +90,14 @@ class microFE():
         os.system(command)
 
 
-    def convertMesh(self, height, displacement):
+    def convertMesh(self, height, perc_displacement):
         '''
         Use matlab output files to create ParaFEM input files.
 
         Requires
         --------
-        height : float
-            Z-coordinate of the displaced nodes.
-        displacement : float
-            Displacement assigned to all the mesh upper nodes.
+        perc_displacement : float
+            Percentage displacement assigned to all the mesh upper nodes.
         '''
 
         bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
@@ -113,6 +112,18 @@ class microFE():
 
         d_file.write("*THREE_DIMENSIONAL\n")
         d_file.write("*NODES\n")
+
+        # TODO: find highest node directly in matlab rather than here
+        with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
+            height = 0.0
+            for node in nodes:
+                n = node.split(',')
+
+                nz = float(n[4])
+
+                if nz > height:
+                    height = nz
+        displacement = height * (100.0 - self.perc_displacement)/100.0
 
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
             self.nnod = 0 # number of nodes
@@ -135,7 +146,7 @@ class microFE():
                 d_file.write(d)
 
                 if nz == height: # displacement only along z-axis
-                    f = "{0} 3 {1}\n".format(ni, displacement)
+                    f = "{0} 3 {1}\n".format(ni, -displacement)
                     fix_file.write(f)
 
                     self.nfixnod += 1
@@ -217,9 +228,8 @@ if __name__ == "__main__":
 
         # TODO: find highest node z-coordinate
         # TODO: get displacement from DVC
-        height = 0.02988
-        displacement = 1e-3
+        perc_displacement = 5. #%
 
         print "Convert mesh to ParaFEM format"
-        mFE.convertMesh(height, displacement)
+        mFE.convertMesh(perc_displacement)
         mFE.writeDat()
