@@ -31,8 +31,9 @@ LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
 img_names = <microCT images wildcard>
 
 [mesher_parameters]
-threshold = 18500
-Image_Resolution = 0.00996
+threshold = <grayscale threshold, default=18500>
+Image_Resolution = <voxel size, default=0.00996>
+perc_displacement = <percentage z-wise displacement of uppermost nodes>
 
 [job]
 name = <job name>
