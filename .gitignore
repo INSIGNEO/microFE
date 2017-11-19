@@ -16,5 +16,4 @@ parafem_inputs/*
 Subsample.mat
 microFE_job.pbs
 microFE_local.ini
-microFE.ini
 microFE-archer.ini
