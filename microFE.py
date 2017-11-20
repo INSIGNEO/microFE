@@ -6,27 +6,36 @@ Author: A Melis
 '''
 
 __author__ = "Alessandro Melis"
-__copyright__ = "Copyright 2017"
+__copyright__ = "Copyright 2017 INSIGNEO Institute for in silico Medicine"
 __credits__ = ["A Melis", "Y. Chen"]
 __version__ = "0.0.1"
 __maintainer__ = "Alessandro Melis"
 __email__ = "a.melis@sheffield.ac.uk"
-__status__ = "Prototype"
 
 import os
 import sys
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser
 
+
 class microFE():
-    def __init__(self, file_name):
+    '''
+    microFE class definition.
+    '''
+
+    def __init__(self, cfg_file_name):
         '''
         Read .ini configuration file and create output directory
+
+        Parameters
+        ----------
+        cfg_file_name : str
+            Configuration filename.
         '''
 
         # parse .ini configuration file
         p = SafeConfigParser()
-        p.read(file_name)
+        p.read(cfg_file_name)
 
         # CT images
         self.file_folder = p.get("directories", "file_folder")
@@ -71,8 +80,6 @@ class microFE():
         if not os.path.isdir(self.parafem_dir):
             os.mkdir(self.parafem_dir)
 
-        return
-
 
     def launchMatlabMesher(self):
         '''
@@ -86,47 +93,75 @@ class microFE():
         for p in self.mesher_params:
             command += pre+str(p)+sep
 
-        print command
         os.system(command)
 
 
     def convertMesh(self):
         '''
-        Use matlab output files to create ParaFEM input files.
+        Convert matlab output files to ParaFEM input files.
         '''
 
-        bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
+        # system geometry
         d_file = open("{0}/{1}.d".format(self.parafem_dir, self.job_name), 'w')
-
-        fix_file = open("{0}/{1}.fix".format(self.parafem_dir, self.job_name), 'w')
-        self.nfixnod = 0
-
-        lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
-
         d_file.write("*THREE_DIMENSIONAL\n")
         d_file.write("*NODES\n")
 
+        # constrained DOFs
+        bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
+
+        # prescribed displacements != 0
+        fix_file = open("{0}/{1}.fix".format(self.parafem_dir, self.job_name), 'w')
+        self.nfixnod = 0 # fixed nodes counter
+
+        # prescribed loads
+        lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
+
+        #---------------------------------------------------------------------------------
+
+        # Write lds and bnd file
+        # Loops through nodedata.txt and finds the max z-coordinate
+        # this will be used to assign displacement to uppermost nodes.
+        # Nodes with nz=0 are constrained, a zero load along x, y, and z is also assigned.
+
         # TODO: find highest node directly in matlab rather than here
+
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
             height = 0.0
+            self.nres = 0 # constrained nodes counter
+            self.nlnod = 0 # loaded nodes counter
             for node in nodes:
                 n = node.split(',')
 
+                ni = n[1]
                 nz = float(n[4])
 
+                # find highest (z-wise) nodes
                 if nz > height:
                     height = nz
 
-                # we do not prescribe loads...right?
-                lds_file.write("{0} 0 0 0\n".format(n[1]))
-        lds_file.close()
-        self.nlnod = 0 # number of loaded nodes
+                # constrain bottom nodes
+                if nz == 0.0:
+                    b = "{0} 1 1 1\n".format(ni)
+                    bnd_file.write(b)
 
+                    l = "{0} 0 0 0\n".format(ni)
+                    lds_file.write(l)
+
+                    self.nres += 1
+                    self.nlnod += 1
+        bnd_file.close()
+        lds_file.close()
+
+        # Compute upper face displacement as percentage of model height
+        # perc_displacement is user-assigned in the configuration file
         displacement = height * self.perc_displacement / 100.0
 
+        #---------------------------------------------------------------------------------
+
+        # Write d (nodes only) and fix files while iterating again over nodedata
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-            self.nnod = 0 # number of nodes
-            self.nres = 0 # number of constrained nodes
+            self.nnod = 0 # nodes counter
+
             for node in nodes:
                 n = node.split(',')
 
@@ -135,29 +170,28 @@ class microFE():
                 ny = float(n[3])
                 nz = float(n[4])
 
-                if nz == 0:
-                    b = "{0} 1 1 1\n".format(ni)
-                    bnd_file.write(b)
-
-                    self.nres += 1
-
+                # add node to nodes list
                 d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
                 d_file.write(d)
 
+                # assign displacement to upper nodes
                 if nz == height: # displacement only along z-axis
                     f = "{0} 3 {1}\n".format(ni, -displacement)
                     fix_file.write(f)
 
                     self.nfixnod += 1
-
                 self.nnod += 1
+        fix_file.close()
+
+        #---------------------------------------------------------------------------------
+
+        # Write elements in d file
 
         d_file.write("*ELEMENTS\n")
-        self.nodpel = 8 # number of nodes per element; Hex8 element p.11-4
-        # http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.Ch11.d/AFEM.Ch11.pdf
+        self.nodpel = 8 # number of nodes per element
 
         with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
-            self.nel = 0 # number of elements
+            self.nel = 0 # elements counter
             for element in elems:
                 self.nel += 1
 
@@ -183,16 +217,22 @@ class microFE():
                 # |/      |/
                 # 1=======2
 
-                d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei,
-                                                        e1, e2, e3, e4, e5, e6, e7, e8)
+                d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei, e1, e2, e3,
+                                                                        e4, e5, e6, e7, e8)
                 d_file.write(d)
-
-        bnd_file.close()
         d_file.close()
-        fix_file.close()
 
 
     def writeDat(self):
+        '''
+        Write .dat file with the following structure
+
+        nel  nnod nres nlnod nfixnod nip
+        limit tol e (Young) v (Poisson)
+        nodpel
+        nloadstep jump
+        tol2
+        '''
         with open("{0}/{1}.dat".format(self.parafem_dir, self.job_name), 'w') as dat:
             line = "{0} {1} {2} {3} {4} {5}\n".format(self.nel, self.nnod, self.nres,
                                                       self.nlnod, self.nfixnod, self.nip)
@@ -211,8 +251,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument("-c", "--cfgfile", help="configuration file name", dest="cfgfile")
-    parser.add_argument("-r", "--runcmd", help="run command 'mesh' or 'convert'",
-                        dest="cmd")
+    parser.add_argument("-r", "--runcmd", help="run command 'mesh' or 'convert'", dest="cmd")
 
     args = parser.parse_args()
 

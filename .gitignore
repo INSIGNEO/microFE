@@ -12,8 +12,9 @@ m_files/test_imgs/*
 m_files/S*b.m
 m_files/params.m
 m_files/mainm.m
+m_files/main
+m_files/run_main.sh
 parafem_inputs/*
 Subsample.mat
-microFE_job.pbs
 microFE_local.ini
 microFE-archer.ini

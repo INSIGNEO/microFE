@@ -1,0 +1,23 @@
+#!/bin/bash --login
+#PBS -N <batch job name>
+#PBS -l select=1
+#PBS -l walltime=<hh:mm:ss>
+#PBS -A <budget code>
+
+export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)
+cd $PBS_O_WORKDIR
+
+# Run matlab mesher and convert to ParaFEM xx15 program format
+module load mcr/9.0.1
+
+python microFE.py -c microFE-archer.ini -r mesh
+python microFE.py -c microFE-archer.ini -r convert
+
+# Run ParaFEM xx15
+module load modules/3.2.10.5
+source $MODULESHOME/init/bash
+module load cray-tpsl-64/17.04.1
+module load cray-petsc-64/3.7.5.0
+
+cd <PARAFEM_FILES_DIR>
+aprun -n 24 -N 24 ../../parafem/bin/xx15_vm_nonlinear_hardening input
