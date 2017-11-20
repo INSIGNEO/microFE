@@ -112,7 +112,7 @@ The Matlab code was developed by Y. Chen as part of his PhD project:
 
 - _Chen Y, Pani M, Taddei F, Mazzà C, Li X, Viceconti M. [Large-scale finite element analysis of human cancellous bone tissue micro computer tomography data: a convergence study](http://biomechanical.asmedigitalcollection.asme.org/article.aspx?articleid=1892759). Journal of biomechanical engineering. 2014 Oct 1;136(10):101013._
 
-- _Chen Y, Dall E, Sales E, Manda K, Wallace R, Pankaj P, Viceconti M. [Micro-CT based finite element models of cancellous bone predict accurately displacement once the boundary condition is well replicated: A validation study](http://www.sciencedirect.com/science/article/pii/S1751616116303204). Journal of the mechanical behavior of biomedical materials. 2017 Jan 31;65:644-51._
+- _Chen Y, Dall'Ara E, Sales E, Manda K, Wallace R, Pankaj P, Viceconti M. [Micro-CT based finite element models of cancellous bone predict accurately displacement once the boundary condition is well replicated: A validation study](http://www.sciencedirect.com/science/article/pii/S1751616116303204). Journal of the mechanical behavior of biomedical materials. 2017 Jan 31;65:644-51._
 
 Program `xx15` for finite strain elasto-plastic analysis with Newton-Raphson was developed in [ParaFEM](http://parafem.org.uk/about/history) by F. Levrero-Florencio as part of his PhD project:
 
