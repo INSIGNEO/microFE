@@ -91,6 +91,8 @@ A batch script to run the microFE model on ARCHER is provided, `microFE_batch_jo
 $ qsub microFE_job.pbs
 ```
 
+:warning: The matlab script does not overwrite old files already in the `OUT_DIR`! On the other hand, `microFE.py` checks whether `elementdata.txt` (matlab's output) exists, and in case stops the execution.
+
 ## ParaFEM xx15 program inputs
 
 ParaFEM uses several input files to define the geometry, boundary conditions and parameters for the simulation. These are defined in the following files:
