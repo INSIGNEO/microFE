@@ -73,16 +73,16 @@ class microFE():
         # create output folders
         if not os.path.isdir(self.out_folder):
             os.mkdir(self.out_folder)
-        else:
-            assert not os.path.isfile("{0}/elementdata.txt".format(self.out_folder)), "Previous matlab mesh files in OUT_DIR = {0}".format(self.out_folder)
+        elif os.path.isfile("{0}/elementdata.txt".format(self.out_folder)):
+            print "WARNING: Previous matlab mesh files in OUT_DIR = {0}".format(self.out_folder)
 
         if not os.path.isdir(self.binary_folder):
             os.mkdir(self.binary_folder)
 
         if not os.path.isdir(self.parafem_dir):
             os.mkdir(self.parafem_dir)
-        else:
-            assert not os.path.isfile("{0}/{1}.dat".format(self.out_folder, self.job_name)), "Previous ParaFEM mesh files in PARAFEM_FILES_DIR = {0}".format(self.parafem_dir)
+        elif os.path.isfile("{0}/{1}.dat".format(self.out_folder, self.job_name)):
+            print "WARNING: Previous ParaFEM mesh files in PARAFEM_FILES_DIR = {0}".format(self.parafem_dir)
 
 
     def launchMatlabMesher(self):
