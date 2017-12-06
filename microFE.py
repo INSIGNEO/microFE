@@ -148,7 +148,7 @@ class microFE():
                     b = "{0} 1 1 1\n".format(ni)
                     bnd_file.write(b)
 
-                    l = "{0} 0 0 0\n".format(ni)
+                    l = "{0} 0.0 0.0 0.0\n".format(ni)
                     lds_file.write(l)
 
                     self.nres += 1
@@ -211,7 +211,7 @@ class microFE():
                 e5 = e[5]
                 e6 = e[6]
                 e7 = e[7]
-                e8 = e[8]
+                e8 = e[8].strip()
 
                 #    8=======7
                 #   /|      /|
