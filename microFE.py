@@ -247,7 +247,7 @@ class microFE():
 
             dat.write("{0}\n".format(self.nodpel))
             dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
-            dat.write("{0}".format(self.tol2))
+            dat.write("{0}\n1".format(self.tol2))
 
 
 if __name__ == "__main__":

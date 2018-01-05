@@ -18,3 +18,8 @@ parafem_inputs/*
 Subsample.mat
 microFE_local.ini
 microFE-archer.ini
+parafem_io/*
+example/*
+m_files/peakdet.m
+m_files/segm_th.m
+plot.py

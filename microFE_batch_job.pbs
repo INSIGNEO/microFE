@@ -20,4 +20,4 @@ module load cray-tpsl-64/17.04.1
 module load cray-petsc-64/3.7.5.0
 
 cd <PARAFEM_FILES_DIR>
-aprun -n 24 -N 24 <path to>/parafem/bin/xx15 <job name>
+aprun -n 24 -N 24 <path to>/parafem-petsc/bin/xx15_quadric_linear_hardening <job name>
