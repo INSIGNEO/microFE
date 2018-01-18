@@ -8,6 +8,14 @@
 
 This code builds a homogeneous cartesian mesh from microCT images.
 
+### Convert DICOM images to TIFF
+
+On ubuntu, [download ImageJ](https://imagej.net/Downloads), open the image, and `File>Save As>Tiff...`. This will produce a unique `.tif` file containing multiple slices. To obtain single images for each slice
+
+```bash
+$ convert <single file>.tif -scene 1 Scan_%04d.tif
+```
+
 ## Matlab mesher
 
 In `m_files\` there is the code for generating FE models with cartesian mesh and homogeneous material properties. The original mesher code is in `/m_files/mesher.m`.
@@ -40,7 +48,7 @@ img_names = <microCT images wildcard>
 
 [mesher_parameters]
 threshold = <bone tissue threshold in uCT images, e.g., 18500>
-Image_Resolution = <voxel size in uCT images, e.g., 0.00996>
+Image_Resolution = <voxel size in uCT images in mm, e.g., 0.00996>
 perc_displacement = <percentage displacemente along z-axis for uppermost nodes>
 
 [job]

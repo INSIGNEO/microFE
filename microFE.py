@@ -143,16 +143,17 @@ class microFE():
                 if nz > height:
                     height = nz
 
+                # assign zero load
+                l = "{0} 0.0 0.0 0.0\n".format(ni)
+                lds_file.write(l)
+                self.nlnod += 1
+
                 # constrain bottom nodes
                 if nz == 0.0:
                     b = "{0} 1 1 1\n".format(ni)
                     bnd_file.write(b)
-
-                    l = "{0} 0.0 0.0 0.0\n".format(ni)
-                    lds_file.write(l)
-
                     self.nres += 1
-                    self.nlnod += 1
+
         bnd_file.close()
         lds_file.close()
 
