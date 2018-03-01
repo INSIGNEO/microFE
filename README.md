@@ -67,7 +67,7 @@ tol2 = <convergence tolerance of the Newton-Raphson scheme>
 
 ## Usage
 
-On \*nix compile matlab code as
+Compile matlab code as
 
 ```bash
 $ ./compile.sh

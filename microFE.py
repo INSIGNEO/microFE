@@ -109,16 +109,22 @@ class microFE():
         d_file = open("{0}/{1}.d".format(self.parafem_dir, self.job_name), 'w')
         d_file.write("*THREE_DIMENSIONAL\n")
         d_file.write("*NODES\n")
+        self.nnod = 0 # nodes counter
+        self.nel = 0 # elements counter
+        self.nodpel = 8 # number of nodes per element
 
         # constrained DOFs
         bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
+        self.nres = 0 # constrained nodes counter
 
         # prescribed displacements != 0
         fix_file = open("{0}/{1}.fix".format(self.parafem_dir, self.job_name), 'w')
         self.nfixnod = 0 # fixed nodes counter
+        height = 0.0
 
         # prescribed loads
         lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
+        self.nlnod = 0 # loaded nodes counter
 
         #---------------------------------------------------------------------------------
 
@@ -130,29 +136,35 @@ class microFE():
         # TODO: find highest node directly in matlab rather than here
 
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-            height = 0.0
-            self.nres = 0 # constrained nodes counter
-            self.nlnod = 0 # loaded nodes counter
             for node in nodes:
-                n = node.split(',')
+                n = node.strip().split(',')
 
                 ni = n[1]
+                nx = float(n[2])
+                ny = float(n[3])
                 nz = float(n[4])
+
+                # add node to nodes list
+                d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
+                d_file.write(d)
+                self.nnod += 1
 
                 # find highest (z-wise) nodes
                 if nz > height:
                     height = nz
 
-                # assign zero load
-                l = "{0} 0.0 0.0 0.0\n".format(ni)
-                lds_file.write(l)
-                self.nlnod += 1
+
 
                 # constrain bottom nodes
                 if nz == 0.0:
                     b = "{0} 1 1 1\n".format(ni)
                     bnd_file.write(b)
                     self.nres += 1
+
+                # assign zero load
+                l = "{0} 0.0 0.0 0.0\n".format(ni)
+                lds_file.write(l)
+                self.nlnod += 1
 
         bnd_file.close()
         lds_file.close()
@@ -163,29 +175,19 @@ class microFE():
 
         #---------------------------------------------------------------------------------
 
-        # Write d (nodes only) and fix files while iterating again over nodedata
+        # Assign displacement while iterating again over nodedata
         with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-            self.nnod = 0 # nodes counter
-
             for node in nodes:
-                n = node.split(',')
+                n = node.strip().split(',')
 
                 ni = n[1]
-                nx = float(n[2])
-                ny = float(n[3])
                 nz = float(n[4])
-
-                # add node to nodes list
-                d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
-                d_file.write(d)
 
                 # assign displacement to upper nodes
                 if nz == height: # displacement only along z-axis
-                    f = "{0} 3 {1}\n".format(ni, -displacement)
+                    f = "{0} 3 {1}\n".format(ni, displacement)
                     fix_file.write(f)
-
                     self.nfixnod += 1
-                self.nnod += 1
         fix_file.close()
 
         #---------------------------------------------------------------------------------
@@ -193,14 +195,11 @@ class microFE():
         # Write elements in d file
 
         d_file.write("*ELEMENTS\n")
-        self.nodpel = 8 # number of nodes per element
-
         with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
-            self.nel = 0 # elements counter
             for element in elems:
                 self.nel += 1
 
-                e = element.split(',')
+                e = element.strip().split(',')
 
                 ei = self.nel # element index
 
@@ -212,15 +211,16 @@ class microFE():
                 e5 = e[5]
                 e6 = e[6]
                 e7 = e[7]
-                e8 = e[8].strip()
+                e8 = e[8]
 
-                #    8=======7
+                #    8-------7
                 #   /|      /|
                 #  / |     / |
-                # 5=======6--3
+                # 5-------6  |
+                # |  4----|--3
                 # | /     | /
                 # |/      |/
-                # 1=======2
+                # 1-------2
 
                 d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei, e1, e2, e3,
                                                                         e4, e5, e6, e7, e8)
@@ -248,7 +248,7 @@ class microFE():
 
             dat.write("{0}\n".format(self.nodpel))
             dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
-            dat.write("{0}\n1".format(self.tol2))
+            dat.write("{0}\n".format(self.tol2))
 
 
 if __name__ == "__main__":

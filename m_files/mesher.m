@@ -4,23 +4,18 @@
 
 % folder containing greyscale Micro-CT images
 % fileFolder = fullfile('C:\Users\UOS\Documents\MULTISIM\WP7\SRT200\Greyscale');
-% fileFolder = fullfile('/home/ale/postdoc/microFE/images/ConvergenceCube');
 %
 % % name of greyscale images
-% % image_name = ('SRT****.tif');
 % image_name = ('Scan1_****.tif');
 %
 % % folder where binary images will be saved
 % % binary_folder = fullfile('C:\Users\UOS\Documents\MULTISIM\WP7\SRT200\binary\');
-% binary_folder = fullfile('/home/ale/postdoc/microFE/images/Binary/');
 %
 % % voxel size in mm
-% % Image_Resolution = 0.0104;
 % Image_Resolution = 0.00996;
 Image_Resolution = str2num(Image_Resolution);
 %
 % % threshold for segmentation
-% % threshold = 44000;
 % threshold = 18500;
 threshold = str2num(threshold);
 % threshold can be either assigned manually or calculated automatically
