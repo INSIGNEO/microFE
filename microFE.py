@@ -96,7 +96,7 @@ class microFE():
         command = "{0}run_main.sh {1} ".format(self.M_FILES, self.LD_LIB_PATH)
         for p in self.mesher_params:
             command += pre+str(p)+sep
-
+        # print command
         os.system(command)
 
 
