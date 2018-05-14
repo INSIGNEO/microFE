@@ -295,6 +295,8 @@ class microFE():
 
             f.write("#$ -N {0}\n\n".format(self.job_name))
 
+            f.write("module load apps/matlab/2016a/binary\n")
+
             command = self.matlab_mesher_cmd()
             f.write("{0}\n".format(command))
 
