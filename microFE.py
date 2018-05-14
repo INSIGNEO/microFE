@@ -187,7 +187,7 @@ class microFE():
 
             ansys_command = "ansys172 -p aa_r -dir {0} ".format(self.out_folder)
             ansys_command += "-j {0} -s read -l en-us -b ".format(self.job_name)
-            ansys_command += "-i fe_model.txt ".format(self.ansys_file)
+            ansys_command += "-i fe_model.txt "
             ansys_command += "-o {0}/output.out\n".format(self.out_folder)
             f.write("{0}".format(ansys_command))
 
