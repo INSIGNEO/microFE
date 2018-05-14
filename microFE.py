@@ -191,8 +191,6 @@ class microFE():
             ansys_command += "-o {0}/output.out\n".format(self.out_folder)
             f.write("{0}".format(ansys_command))
 
-f.write("nsel,s,loc,z,{0}\n".format(self.height))
-f.write("D,all,UZ,{0}\n".format(self.displacement))
 if __name__ == "__main__":
 
     parser = ArgumentParser()
