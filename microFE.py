@@ -128,156 +128,28 @@ class microFE():
             command += pre+str(p)+sep
         return command
 
-    #
-    # def convertMesh(self):
-    #     '''
-    #     Convert matlab output files to ParaFEM input files.
-    #     '''
-    #
-    #     # system geometry
-    #     d_file = open("{0}/{1}.d".format(self.parafem_dir, self.job_name), 'w')
-    #     d_file.write("*THREE_DIMENSIONAL\n")
-    #     d_file.write("*NODES\n")
-    #     self.nnod = 0 # nodes counter
-    #     self.nel = 0 # elements counter
-    #     self.nodpel = 8 # number of nodes per element
-    #
-    #     # constrained DOFs
-    #     bnd_file = open("{0}/{1}.bnd".format(self.parafem_dir, self.job_name), 'w')
-    #     self.nres = 0 # constrained nodes counter
-    #
-    #     # prescribed displacements != 0
-    #     fix_file = open("{0}/{1}.fix".format(self.parafem_dir, self.job_name), 'w')
-    #     self.nfixnod = 0 # fixed nodes counter
-    #     height = 0.0
-    #
-    #     # prescribed loads
-    #     lds_file = open("{0}/{1}.lds".format(self.parafem_dir, self.job_name), 'w')
-    #     self.nlnod = 0 # loaded nodes counter
-    #
-    #     #---------------------------------------------------------------------------------
-    #
-    #     # Write lds and bnd file
-    #     # Loops through nodedata.txt and finds the max z-coordinate
-    #     # this will be used to assign displacement to uppermost nodes.
-    #     # Nodes with nz=0 are constrained, a zero load along x, y, and z is also assigned.
-    #
-    #     # TODO: find highest node directly in matlab rather than here
-    #
-    #     with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-    #         for node in nodes:
-    #             n = node.strip().split(',')
-    #
-    #             ni = n[1]
-    #             nx = float(n[2])
-    #             ny = float(n[3])
-    #             nz = float(n[4])
-    #
-    #             # add node to nodes list
-    #             d = "{0} {1} {2} {3}\n".format(ni, nx, ny, nz)
-    #             d_file.write(d)
-    #             self.nnod += 1
-    #
-    #             # find highest (z-wise) nodes
-    #             if nz > height:
-    #                 height = nz
-    #
-    #
-    #
-    #             # constrain bottom nodes
-    #             if nz == 0.0:
-    #                 b = "{0} 1 1 1\n".format(ni)
-    #                 bnd_file.write(b)
-    #                 self.nres += 1
-    #
-    #             # assign zero load
-    #             l = "{0} 0.0 0.0 0.0\n".format(ni)
-    #             lds_file.write(l)
-    #             self.nlnod += 1
-    #
-    #     bnd_file.close()
-    #     lds_file.close()
-    #
-    #     # Compute upper face displacement as percentage of model height
-    #     # perc_displacement is user-assigned in the configuration file
-    #     displacement = height * self.perc_displacement / 100.0
-    #
-    #     #---------------------------------------------------------------------------------
-    #
-    #     # Assign displacement while iterating again over nodedata
-    #     with open("{0}/nodedata.txt".format(self.out_folder), 'r') as nodes:
-    #         for node in nodes:
-    #             n = node.strip().split(',')
-    #
-    #             ni = n[1]
-    #             nz = float(n[4])
-    #
-    #             # assign displacement to upper nodes
-    #             if nz == height: # displacement only along z-axis
-    #                 f = "{0} 3 {1}\n".format(ni, displacement)
-    #                 fix_file.write(f)
-    #                 self.nfixnod += 1
-    #     fix_file.close()
-    #
-    #     #---------------------------------------------------------------------------------
-    #
-    #     # Write elements in d file
-    #
-    #     d_file.write("*ELEMENTS\n")
-    #     with open("{0}/elementdata.txt".format(self.out_folder), 'r') as elems:
-    #         for element in elems:
-    #             self.nel += 1
-    #
-    #             e = element.strip().split(',')
-    #
-    #             ei = self.nel # element index
-    #
-    #             # element nodes indices
-    #             e1 = e[1]
-    #             e2 = e[2]
-    #             e3 = e[3]
-    #             e4 = e[4]
-    #             e5 = e[5]
-    #             e6 = e[6]
-    #             e7 = e[7]
-    #             e8 = e[8]
-    #
-    #             #    8-------7
-    #             #   /|      /|
-    #             #  / |     / |
-    #             # 5-------6  |
-    #             # |  4----|--3
-    #             # | /     | /
-    #             # |/      |/
-    #             # 1-------2
-    #
-    #             d = "{0} 3 8 1 {1} {2} {3} {4} {5} {6} {7} {8} 1\n".format(ei, e1, e2, e3,
-    #                                                                     e4, e5, e6, e7, e8)
-    #             d_file.write(d)
-    #     d_file.close()
-    #
-    #
-    # def writeDat(self):
-    #     '''
-    #     Write .dat file with the following structure
-    #
-    #     nel  nnod nres nlnod nfixnod nip
-    #     limit tol e (Young) v (Poisson)
-    #     nodpel
-    #     nloadstep jump
-    #     tol2
-    #     '''
-    #     with open("{0}/{1}.dat".format(self.parafem_dir, self.job_name), 'w') as dat:
-    #         line = "{0} {1} {2} {3} {4} {5}\n".format(self.nel, self.nnod, self.nres,
-    #                                                   self.nlnod, self.nfixnod, self.nip)
-    #         dat.write(line)
-    #
-    #         line = "{0} {1} {2} {3}\n".format(self.limit, self.tol, self.E, self.vP)
-    #         dat.write(line)
-    #
-    #         dat.write("{0}\n".format(self.nodpel))
-    #         dat.write("{0} {1}\n".format(self.nloadstep, self.jump))
-    #         dat.write("{0}\n".format(self.tol2))
+
+    def write_ansys_model(self):
+        with open("fe_model-1.txt", 'w') as f:
+            f.write("/prep7\n")
+            f.write("ET,1,SOLID185\n")
+            f.write("MP,EX,1,17000\n")
+            f.write("MP,PRXY,1,0.3\n")
+            f.write("/nopr\n")
+            f.write("/INPUT,'{0}/nodedata','txt'\n".format(self.out_folder))
+            f.write("/INPUT,'{0}/elementdata','txt'\n".format(self.out_folder))
+            f.write("/gopr\n")
+            f.write("nsel,s,loc,z,0\n")
+            f.write("D,all, , , , , ,ALL, , , , ,\n")
+
+        with open("fe_model-2.txt", 'w') as f:
+            f.write("allsel\n")
+            f.write("/Solu\n")
+            f.write("Antype,0\n")
+            f.write("eqslv,pcg\n")
+            f.write("solve\n")
+            f.write("SAVE,'{0}','db'\n".format(self.job_name))
+            f.write("/exit,nosave")
 
 
     def write_batch_file(self):
@@ -293,14 +165,34 @@ class microFE():
 
             f.write("#$ -l rmem={0}G\n".format(self.rmem))
 
-            f.write("#$ -N {0}\n\n".format(self.job_name))
+            f.write("#$ -N {0}\n".format(self.job_name))
+            f.write("\n")
 
             f.write("module load apps/matlab/2016a/binary\n")
+            f.write("module load apps/ansys/16.1\n")
+            f.write("\n")
 
-            command = self.matlab_mesher_cmd()
-            f.write("{0}\n".format(command))
+            mesh_command = self.matlab_mesher_cmd()
+            f.write("{0}\n".format(mesh_command))
+            f.write("\n")
 
+            f.write("A=$(tail -n 1 {0}/nodedata.txt) | ".format(self.out_folder))
+            f.write("B=$(cut -d',' -f5 <<< $A)\n")
+            f.write('echo "nsel,s,loc,z,$B" >> fe_model-1.txt\n')
+            f.write('echo "nsel,s,loc,z,$B" >> fe_model-1.txt\n')
+            f.write('C=$(python -c "import sys; print ')
+            f.write('float(sys.argv[1])/100.0*float(sys.argv[1])" $B {0})'.format(self.perc_displacement))
+            f.write('echo "D,all,UZ,-$C" >> fe_model-1.txt\n')
+            f.write('cat fe_model-1.txt fe_model-2.txt > fe_model.txt\n')
 
+            ansys_command = "ansys172 -p aa_r -dir {0} ".format(self.out_folder)
+            ansys_command += "-j {0} -s read -l en-us -b ".format(self.job_name)
+            ansys_command += "-i fe_model.txt ".format(self.ansys_file)
+            ansys_command += "-o {0}/output.out\n".format(self.out_folder)
+            f.write("{0}".format(ansys_command))
+
+f.write("nsel,s,loc,z,{0}\n".format(self.height))
+f.write("D,all,UZ,{0}\n".format(self.displacement))
 if __name__ == "__main__":
 
     parser = ArgumentParser()
@@ -310,24 +202,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print "Parse configuration file"
     mFE = microFE(args.cfg_file)
 
-    mFE.write_batch_file()
+    mFE.write_ansys_model()
 
+    mFE.write_batch_file()
     os.system("qsub job.sh")
 
-    # submit batch job
-    #
-    # if args.cmd == "mesh":
-    #     print "Run mesher"
-    #     mFE.write_batch_file()
-    #     # mFE.launchMatlabMesher()
-    #
-    # elif args.cmd == "convert":
-    #
-    #     # TODO: get displacement from DVC
-    #
-    #     print "Convert mesh to ParaFEM format"
-    #     mFE.convertMesh()
-    #     mFE.writeDat()
+    # A=$(tail -n 1 outputs/nodedata.txt) | B=$(cut -d',' -f5 <<< $A) | echo "$B"
