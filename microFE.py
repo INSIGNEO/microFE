@@ -150,10 +150,10 @@ class microFE():
         self.displacement = self.height*self.perc_displacement/100.0
 
     def run_ansys_model(self):
-        command = "ansys172 -p aa_r -dir /fastdata/me1ame/microFE/outputs/".format(self.out_folder)
+        command = "ansys172 -p aa_r -dir {0}".format(self.out_folder)
         command += " -j {0}".format(self.job_name)
         command += " -s read -l en-us -b -i fe_model.txt"
-        command += " -o {0}output.out".format("self.out_folder")
+        command += " -o {0}output.out".format(self.out_folder)
         os.system(command)
         # print command
 
