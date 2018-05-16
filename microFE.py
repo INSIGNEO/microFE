@@ -123,8 +123,8 @@ class microFE():
             f.write("MP,EX,1,17000\n")
             f.write("MP,PRXY,1,0.3\n")
             f.write("/nopr\n")
-            f.write("/INPUT,'{0}/nodedata','txt'\n".format(self.out_folder))
-            f.write("/INPUT,'{0}/elementdata','txt'\n".format(self.out_folder))
+            f.write("/INPUT,'{0}nodedata','txt'\n".format(self.out_folder))
+            f.write("/INPUT,'{0}elementdata','txt'\n".format(self.out_folder))
             f.write("/gopr\n")
             f.write("nsel,s,loc,z,0\n")
             f.write("D,all, , , , , ,ALL, , , , ,\n")
@@ -154,24 +154,21 @@ class microFE():
         command += " -j {0}".format(self.job_name)
         command += " -s read -l en-us -b -i fe_model.txt"
         command += " -o {0}output.out".format(self.out_folder)
-        os.system(command)
-        # print command
+        # os.system(command)
+        print command
 
 if __name__ == "__main__":
 
     parser = ArgumentParser()
 
     parser.add_argument("-c", "--config_file", help=".ini file name", dest="cfg_file")
-    parser.add_argument("-r", "--run_cmd", help="'mesh' or 'fem'", dest="cmd")
+    # parser.add_argument("-r", "--run_cmd", help="'mesh' or 'fem'", dest="cmd")
 
     args = parser.parse_args()
 
-    if args.cmd == "mesh":
-        mFE = microFE(args.cfg_file)
-        mFE.run_matlab_mesher()
+    mFE = microFE(args.cfg_file)
+    mFE.run_matlab_mesher()
 
-    else:
-        mFE = microFE(args.cfg_file, check=False)
-        mFE.compute_height_and_displacement()
-        mFE.write_ansys_model()
-        mFE.run_ansys_model()
+    mFE.compute_height_and_displacement()
+    mFE.write_ansys_model()
+    mFE.run_ansys_model()
