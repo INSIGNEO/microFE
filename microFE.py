@@ -15,7 +15,7 @@ __email__ = "a.melis@sheffield.ac.uk"
 import os
 import sys
 from argparse import ArgumentParser
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 
 class microFE():
@@ -160,7 +160,7 @@ class microFE():
         # command += " -o {0}output.out".format(self.out_folder)
         # command += " -j {0}".format(self.job_name)
         # os.system(command)
-        command = "qsub -j y -l h_rt=24:00:00 -l rmem=32G -m bea a.melis@sheffield.ac.uk /usr/local/packages/apps/shef/ansys/batch/ansys172job {0}fe_model.txt 0 -b -j {1}".format(self.out_folder, self.job_nam)
+        command = "qsub -j y -l h_rt=24:00:00 -l rmem=32G -m bea a.melis@sheffield.ac.uk /usr/local/packages/apps/shef/ansys/batch/ansys172job {0}fe_model.txt 0 -b -j {1}".format(self.out_folder, self.job_name)
         os.chdir("{0}".format(self.out_folder))
         os.system(command)
 
