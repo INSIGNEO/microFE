@@ -160,7 +160,7 @@ class microFE():
         # command += " -o {0}output.out".format(self.out_folder)
         # command += " -j {0}".format(self.job_name)
         # os.system(command)
-        command = "qsub -j y -l h_rt=24:00:00 -l rmem=32G -m bea a.melis@sheffield.ac.uk /usr/local/packages/apps/shef/ansys/batch/ansys172job {0}fe_model.txt 0 -b -j {1}".format(self.out_folder, self.job_name)
+        command = "ansys172 -i fe_model.txt -j {1}".format(self.out_folder, self.job_name)
         os.chdir("{0}".format(self.out_folder))
         os.system(command)
 
@@ -171,8 +171,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mFE = microFE(args.cfg_file)
-    mFE.run_matlab_mesher()
+    # mFE.run_matlab_mesher()
 
-    mFE.simple_BC()
-    mFE.write_ansys_model()
+    # mFE.simple_BC()
+    # mFE.write_ansys_model()
     mFE.run_ansys_model()
