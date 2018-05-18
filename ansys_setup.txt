@@ -28,4 +28,4 @@ solve
 
 SAVE,'Homo','db'
 
-/exit,nosave
+/exit
