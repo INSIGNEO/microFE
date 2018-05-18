@@ -1,0 +1,12 @@
+name: mFE
+channels:
+    - conda-forge
+dependencies:
+    - python>=3.5
+    - numpy
+    - matplotlib
+    - scipy
+    - ipython
+    - pip:
+      - pydicom
+      - Pillow
