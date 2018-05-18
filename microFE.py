@@ -134,7 +134,16 @@ class microFE():
             f.write("eqslv,pcg\n")
             f.write("solve\n")
             f.write("SAVE,'{0}','db'\n".format(self.job_name))
-            f.write("/exit")
+
+
+            f.write("/POST1\n")
+            f.write("/OUTPUT,ANSYS_results,txt\n")
+            f.write("PRNSOL,DispX,U,X\n")
+            f.write("PRNSOL,DispY,U,Y\n")
+            f.write("PRNSOL,DispZ,U,Z\n")
+            f.write("/out\n")
+
+            f.write("/exit\n")
 
 
     def compute_height_and_displacement(self):
