@@ -139,13 +139,21 @@ class microFE():
             f.write("solve\n")
             f.write("SAVE,'{0}','db'\n".format(self.job_name))
 
-            f.write("/POST1\n")
-            f.write("/OUTPUT,ANSYS_results,txt\n")
-            f.write("PRNSOL,U,X\n")
-            f.write("PRNSOL,U,Y\n")
-            f.write("PRNSOL,U,Z\n")
-            f.write("/out\n")
-
+            f.write("*CFOPEN,displacements,txt\n")
+            f.write("*GET,num_nodes_,NODE,0,COUNT !Get the number of nodes\n")
+            f.write("*GET,node_,NODE,0,NUM,MIN !Get label of the first node\n")
+            f.write("*DO,i,1,num_nodes_,1\n")
+            f.write("  ! Define some parameters\n")
+            f.write("  *GET,nx_,NODE,node_,LOC,X\n")
+            f.write("  *GET,ny_,NODE,node_,LOC,Y\n")
+            f.write("  *GET,nz_,NODE,node_,LOC,Z\n")
+            f.write("  ! Write line\n")
+            f.write("  *VWRITE,node_,nx_,ny_,nz_\n")
+            f.write("  (F8.0,',',E10.3,',',E10.3,',',E10.3)\n")
+            f.write("  ! select the next node\n")
+            f.write("  *GET,node_,NODE,node_,NXTH\n")
+            f.write("*ENDDO\n")
+            f.write("*CFCLOSE\n")
             f.write("/exit\n")
 
 
