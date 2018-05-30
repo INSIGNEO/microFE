@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from configparser import SafeConfigParser
 import pydicom
 from PIL import Image
+from textwrap import dedent
 
 
 class microFE():
@@ -52,7 +53,7 @@ class microFE():
 
     def load_mesher_parameters(self, p):
         self.threshold = p.get("mesher_parameters", "threshold")
-        self.image_resolution = p.get("mesher_parameters", "image_resolution")
+        self.image_resolution = float(p.get("mesher_parameters", "image_resolution"))*1e-6
         self.perc_displacement = float(p.get("mesher_parameters", "perc_displacement"))
         self.mesher_params = [self.tiff_folder, self.tiff_wildcard, self.binary_folder,
                                 self.image_resolution, self.threshold, self.out_folder]
@@ -120,43 +121,53 @@ class microFE():
 
     def write_ansys_model(self):
         with open("{0}fe_model.txt".format(self.out_folder), 'w') as f:
-            f.write("/prep7\n")
-            f.write("ET,1,SOLID185\n")
-            f.write("MP,EX,1,17000\n")
-            f.write("MP,PRXY,1,0.3\n")
-            f.write("/nopr\n")
-            f.write("/INPUT,'{0}nodedata','txt'\n".format(self.out_folder))
-            f.write("/INPUT,'{0}elementdata','txt'\n".format(self.out_folder))
-            f.write("/gopr\n")
-            f.write("nsel,s,loc,z,0\n")
-            f.write("D,all, , , , , ,ALL, , , , ,\n")
-            f.write("nsel,s,loc,z,{0:15.15f}\n".format(self.height))
-            f.write("D,all,UZ,{0:15.15f}\n".format(self.displacement))
-            f.write("allsel\n")
-            f.write("/Solu\n")
-            f.write("Antype,0\n")
-            f.write("eqslv,pcg\n")
-            f.write("solve\n")
-            f.write("SAVE,'{0}','db'\n".format(self.job_name))
+            opts = {"out_folder": self.out_folder,
+                    "height": self.height,
+                    "displacement": self.displacement,
+                    "job_name": self.job_name
+                    }
 
-            f.write("/POST1\n")
-            f.write("SET,Last\n")
-            f.write("*get,nNodes,NODE,0,count\n")
-            f.write("*DIM,Nodal_strain,ARRAY,nNodes,4\n")
-            f.write("N = 0\n")
-            f.write("*do,i,1,nNodes\n")
-            f.write("*GET,Nodal_strain(i,1),NODE,N,NXTH\n")
-            f.write("N = Nodal_strain(i,1)\n")
-            f.write("*GET,Nodal_strain(i,2),NODE,Nodal_strain(i,1),U,X\n")
-            f.write("*GET,Nodal_strain(i,3),NODE,Nodal_strain(i,1),U,Y\n")
-            f.write("*GET,Nodal_strain(i,4),NODE,Nodal_strain(i,1),U,Z\n")
-            f.write("*enddo\n")
-            f.write("*cfopen,'NodalDisplacements',txt\n")
-            f.write("*vwrite,Nodal_strain(1,1),Nodal_strain(1,2),Nodal_strain(1,3),Nodal_strain(1,4)\n")
-            f.write("(F10.0,TL1,' ','  'F15.10,'  ',F15.10'  ',F15.10)\n")
-            f.write("*cfclose\n")
-            f.write("FINISH\n")
-            f.write("/exit,nosave\n")
+            f.write(dedent("""\
+            /prep7
+            ET,1,SOLID185
+            MP,EX,1,17000
+            MP,PRXY,1,0.3
+            /nopr
+            /INPUT,'{out_folder}nodedata','txt'
+            /INPUT,'{out_folder}elementdata','txt'
+            /gopr
+            nsel,s,loc,z,0
+            D,all, , , , , ,ALL, , , , ,
+            nsel,s,loc,z,{height:15.15f}
+            D,all,UZ,{displacement:15.15f}
+            allsel
+
+            /Solu
+            Antype,0
+            eqslv,pcg
+            solve
+            SAVE,'{job_name}','db'
+            /exit,nosave
+
+            /POST1
+            SET,Last
+            *get,nNodes,NODE,0,count
+            *DIM,Nodal_strain,ARRAY,nNodes,4
+            N = 0
+            *do,i,1,nNodes
+            *GET,Nodal_strain(i,1),NODE,N,NXTH
+            N = Nodal_strain(i,1)
+            *GET,Nodal_strain(i,2),NODE,Nodal_strain(i,1),U,X
+            *GET,Nodal_strain(i,3),NODE,Nodal_strain(i,1),U,Y
+            *GET,Nodal_strain(i,4),NODE,Nodal_strain(i,1),U,Z
+            *enddo
+            *cfopen,'NodalDisplacements',txt
+            *vwrite,Nodal_strain(1,1),Nodal_strain(1,2),Nodal_strain(1,3),Nodal_strain(1,4)
+            (F10.0,TL1,' ','  'F15.10,'  ',F15.10'  ',F15.10)
+            *cfclose
+            FINISH
+            /exit,nosave
+            """.format(**opts)))
 
 
     def compute_height_and_displacement(self):
@@ -169,6 +180,34 @@ class microFE():
         self.height = max_node_z
         self.displacement = self.height*self.perc_displacement/100.0
 
+
+    def compute_lenght_width_height(self):
+        max_node_x = 0.0
+        max_node_y = 0.0
+        max_node_z = 0.0
+
+        with open("{0}/nodedata.txt".format(self.out_folder), 'r') as f:
+            for line in f:
+                x = float(line.strip().split(',')[2])
+                y = float(line.strip().split(',')[3])
+                z = float(line.strip().split(',')[4])
+
+                if x > max_node_x:
+                    max_node_x = x
+
+                if y > max_node_y:
+                    max_node_y = y
+
+                if z > max_node_z:
+                    max_node_z = z
+
+        self.lenght = max_node_x
+        self.width = max_node_y
+        self.height = max_node_z
+
+
+    def compute_displacement(self):
+        self.displacement
 
     def simple_BC(self):
         slices = len(os.listdir(self.binary_folder))
