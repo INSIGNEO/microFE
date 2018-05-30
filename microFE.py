@@ -147,7 +147,6 @@ class microFE():
             eqslv,pcg
             solve
             SAVE,'{job_name}','db'
-            /exit,nosave
 
             /POST1
             SET,Last
@@ -206,8 +205,8 @@ class microFE():
         self.height = max_node_z
 
 
-    def compute_displacement(self):
-        self.displacement
+    # def compute_displacement(self):
+    #     self.displacement
 
     def simple_BC(self):
         slices = len(os.listdir(self.binary_folder))
