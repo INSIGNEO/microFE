@@ -29,7 +29,13 @@ $ ./compile.sh
 
 ## Usage
 
-Meshing and FE solver are run by submitting a batch job. See `microFE.sh` for an example file. All the parameters are specified in the `.ini` configuration file.
+The entire pipeline is run by
+
+```bash
+$ python microFE.py -c config.ini
+```
+
+where `config.ini` is a generic configuration file. Meshing and FE solver are run by submitting a batch job. See `microFE.sh` for an example file. All the parameters are specified in the `.ini` configuration file.
 
 ### Configuration file
 
@@ -37,20 +43,26 @@ The meshing process requires the definition of a number of paths and variables. 
 
 ```
 [directories]
-M_FILES = <folder containing the compiled matlab code>
-FILE_FOLDER = <microCT images folder>
-BINARY_FOLDER = <folder where to save binary images>
-OUT_DIR = <output folder path>
-PARAFEM_FILES_DIR = <ParaFEM input files directory>
-LD_LIB_PATH = <matlab executable path, usually $LD_LIBRARY_PATH>
+CT_IMAGE_FOLDER = <CT image location>
+OUTPUT_DIR = <output folder path>
+MESHER_SRC = <folder containing the compiled matlab code>
+LD_LIB_PATH = <matlab executable path, $LD_LIBRARY_PATH on ShARC>
 
 [images]
 img_name = <microCT DICOM image name>
 
-[mesher_parameters]
+[mesher]
 threshold = <bone tissue threshold in uCT images, e.g., 18500>
-Image_Resolution = <voxel size in uCT images in mm, e.g., 0.00996>
+resolution = <voxel size in uCT images in micron, e.g., 19.96>
 perc_displacement = <percentage displacemente along z-axis for uppermost nodes; can be positive or negative>
+
+[fem]
+boundary_condition = <`displacement` or `load`>
+units = <`mm` or `percent` for `displacement`, `N` for `load`>
+direction = <`x`, `y`, or `z`>
+sign = <`positive` or `negative`>
+amount = <diplacement or load amount; float>
+constrain = <`full` or `free`>
 
 [job]
 name = <job name>
@@ -70,31 +82,33 @@ The `m_files/main.m` file executes the mesher.
 
 The script in `m_files/compile.sh` compiles the matlab scripts with the matlab compiler. Compiled files can be run with the matlab runtime environment.
 
-<!-- Run the mesher as
-```bash
-$ python microFE.py -c cfg_file.ini -r mesh
-```
-
-and convert to ParaFEM format with
-
-```bash
-$ python microFE.py -c cfg_file.ini -r convert
-```
-
-To run ParaFEM
-
-```bash
-$ mpirun -np <number of processes, e.g. 6> ../<path to xx15>/xx15 <job name>
-``` -->
-
 ## Outputs
 
-After executing the mesher, the files needed to generate the FE model are stored as:
+After executing microFE.py, the results will be saved in `OUTPUT_DIR/` folder as specified in the `.ini` configuration file. The folder structure will be
 
-- `OUT_DIR/elementdata.txt`
-- `OUT_DIR/nodedata.txt`
-
-where `OUT_DIR/` folder is specified in the configuration file.
+```
+OUTPUT_DIR/
+ |- elementdata.txt        (mesh elements list)
+ |- nodedata.txt           (mesh nodes list)
+ |- fe_model.txt           (Ansys model script)
+ |- Binary/                (Binary slices from microCT image)
+ |   |- binary0001.tif
+ |   |- binary0002.tif
+ |   |- ...
+ |- tiff/                  (microCT slices converted to tiff from DICOM)
+ |   |- img_name_0001.tif
+ |   |- img_name_0002.tif
+ |   |- ...
+ |- NodalDisplacments.txt  (nodal displacement from FEM solution as: node, x, y, z)
+ |- job_name.db            (Ansys output files)
+ |- job_name.err
+ |- job_name.esav
+ |- job_name.log
+ |- job_name.mntr
+ |- job_name.PCS
+ |- job_name.rst
+ |- job_name.stat
+```
 
 ## Citation
 
