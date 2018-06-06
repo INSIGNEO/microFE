@@ -6,8 +6,6 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This code builds a homogeneous cartesian mesh from a single microCT image.
-
 ## Installation (ShARC)
 
 Log in and create conda environment
@@ -54,7 +52,6 @@ img_name = <microCT DICOM image name>
 [mesher]
 threshold = <bone tissue threshold in uCT images, e.g., 18500>
 resolution = <voxel size in uCT images in micron, e.g., 19.96>
-perc_displacement = <percentage displacemente along z-axis for uppermost nodes; can be positive or negative>
 
 [fem]
 boundary_condition = <`displacement` or `load`>
