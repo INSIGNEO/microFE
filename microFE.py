@@ -186,29 +186,42 @@ class microFE():
         """
         Set FEM boundary conditions.
         """
+        if self.sign == "negative":
+            self.amount *= -1.0
+
         if self.direction == "z":
             self.top_layer = self.height
             self.du = "UZ"
+            self.fu = "FZ"
         elif self.direction == "x":
             self.top_layer = self.width
             self.du = "UX"
+            self.fu = "FX"
         elif self.direction == "y":
             self.top_layer = self.lenght
             self.du = "UY"
+            self.fu = "FY"
 
         if self.boundary_condition == "displacement":
-            self.load = 0.0
-
             if self.units == "percent":
                 self.displacement = self.top_layer*self.amount/100.0
             elif self.units == "mm":
                 self.displacement = self.amount*1e-3
 
-        # TODO: "load" BC
+            self.apdl_bc = "D,all,{0},{1:15.15f}".format(self.du, self.displacement)
 
-        if self.sign == "negative":
-            self.displacement *= -1.0
-            self.load *= -1.0
+        elif self.boundary_condition == "load":
+            self.load = self.amount
+            self.apdl_bc = dedent("""Newton = {0}
+            *GET,NoNodes,NODE,0,COUNT
+            NewtonPerNode = Newton/NoNodes
+            F,ALL,{1},NewtonPerNode
+            """.format(self.load, self.fu))
+
+        if self.constrain == "free":
+            self.displacement_constrain = "D,ALL,{0},0".format(self.du)
+        else:
+            self.displacement_constrain = "D,all, , , , , ,ALL, , , , ,"
 
 
     def write_ansys_model(self):
@@ -218,11 +231,8 @@ class microFE():
         with open("{0}fe_model.txt".format(self.out_folder), 'w') as f:
             opts = {"out_folder": self.out_folder, "job_name": self.job_name,
                     "direction": self.direction, "top_layer": self.top_layer,
-                    "DU": self.du, "displacement": self.displacement}
-
-            # TODO:
-            # - load BC
-            # - free/full constrain
+                    "DU": self.du, "apdl_bc": self.apdl_bc,
+                    "constrain": self.displacement_constrain}
 
             f.write(dedent("""\
             /prep7
@@ -234,9 +244,9 @@ class microFE():
             /INPUT,'{out_folder}elementdata','txt'
             /gopr
             nsel,s,loc,{direction},0
-            D,all, , , , , ,ALL, , , , ,
+            {constrain}
             nsel,s,loc,{direction},{top_layer:15.15f}
-            D,all,{DU},{displacement:15.15f}
+            {apdl_bc}
             allsel
 
             /Solu
@@ -264,48 +274,6 @@ class microFE():
             FINISH
             /exit,nosave
             """.format(**opts)))
-
-    #
-    # def compute_height_and_displacement(self):
-    #     max_node_z = 0.0
-    #     with open("{0}/nodedata.txt".format(self.out_folder), 'r') as f:
-    #         for line in f:
-    #             z = float(line.strip().split(',')[-1])
-    #             if z > max_node_z:
-    #                 max_node_z = z
-    #     self.height = max_node_z
-    #     self.displacement = self.height*self.perc_displacement/100.0
-    #
-    #
-    # def compute_lenght_width_height(self):
-    #     max_node_x = 0.0
-    #     max_node_y = 0.0
-    #     max_node_z = 0.0
-    #
-    #     with open("{0}/nodedata.txt".format(self.out_folder), 'r') as f:
-    #         for line in f:
-    #             x = float(line.strip().split(',')[2])
-    #             y = float(line.strip().split(',')[3])
-    #             z = float(line.strip().split(',')[4])
-    #
-    #             if x > max_node_x:
-    #                 max_node_x = x
-    #
-    #             if y > max_node_y:
-    #                 max_node_y = y
-    #
-    #             if z > max_node_z:
-    #                 max_node_z = z
-    #
-    #     self.lenght = max_node_x
-    #     self.width = max_node_y
-    #     self.height = max_node_z
-    #
-    #
-    # def simple_BC(self):
-    #     slices = len(os.listdir(self.binary_folder))
-    #
-    #     self.displacement = self.height*self.perc_displacement/100.0
 
 
     def run_ansys_model(self):
