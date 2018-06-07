@@ -84,27 +84,27 @@ The script in `m_files/compile.sh` compiles the matlab scripts with the matlab c
 After executing microFE.py, the results will be saved in `OUTPUT_DIR/` folder as specified in the `.ini` configuration file. The folder structure will be
 
 ```
-OUTPUT_DIR/
- |- elementdata.txt        (mesh elements list)
- |- nodedata.txt           (mesh nodes list)
- |- fe_model.txt           (Ansys model script)
- |- Binary/                (Binary slices from microCT image)
- |   |- binary0001.tif
- |   |- binary0002.tif
- |   |- ...
- |- tiff/                  (microCT slices converted to tiff from DICOM)
- |   |- img_name_0001.tif
- |   |- img_name_0002.tif
- |   |- ...
- |- NodalDisplacments.txt  (nodal displacement from FEM solution as: node, x, y, z)
- |- job_name.db            (Ansys output files)
- |- job_name.err
- |- job_name.esav
- |- job_name.log
- |- job_name.mntr
- |- job_name.PCS
- |- job_name.rst
- |- job_name.stat
+<OUTPUT_DIR>/
+  |- elementdata.txt          (mesh elements list)
+  |- nodedata.txt             (mesh nodes list)
+  |- fe_model.txt             (Ansys model script)
+  |- Binary/                  (Binary slices from microCT image)
+  |   |- binary0001.tif
+  |   |- binary0002.tif
+  |   |- ...
+  |- tiff/                    (microCT slices converted to tiff from DICOM)
+  |   |- <img_name>_0001.tif
+  |   |- <img_name>_0002.tif
+  |   |- ...
+  |- NodalDisplacments.txt    (nodal displacement from FEM solution as: node, x, y, z)
+  |- <job_name>.db            (Ansys output files)
+  |- <job_name>.err
+  |- <job_name>.esav
+  |- <job_name>.log
+  |- <job_name>.mntr
+  |- <job_name>.PCS
+  |- <job_name>.rst
+  |- <job_name>.stat
 ```
 
 ## Citation

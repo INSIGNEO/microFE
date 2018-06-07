@@ -70,7 +70,7 @@ end
 
 nCells = 1;
 
-nElements = numel(find(Binary_Matrix))
+nElements = numel(find(Binary_Matrix));
 
 %% Clean memory space and save the variables that only needed in the following calculation
 clearvars -except Binary_Matrix nCells nElements Image_Resolution out_folder;

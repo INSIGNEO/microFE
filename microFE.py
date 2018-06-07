@@ -5,6 +5,10 @@ from configparser import SafeConfigParser
 import pydicom
 from PIL import Image
 from textwrap import dedent
+import logging
+import re
+from datetime import datetime
+import shutil
 
 
 class microFE():
@@ -22,15 +26,21 @@ class microFE():
             Configuration file name.
         '''
 
-        # parse .ini configuration file
+        self.start_logger()
+
+
+        self.logger.info("Read .ini configuration file")
         p = SafeConfigParser()
         p.read(cfg_file_name)
+
         self.check_configuration_file(p)
 
         self.load_folders(p)
         self.check_folders()
 
-        # mesher parameters
+        self.load_job_parameters(p)
+
+
         self.load_mesher_parameters(p)
 
         # fem parameters
@@ -38,43 +48,70 @@ class microFE():
         self.check_fem_parameters()
 
         # batch job
-        self.load_job_parameters(p)
+
 
         # convert DICOM to tiff format
         self.dcm2tiff()
+
+
+    def start_logger(self):
+        self.pwd = os.getcwd()
+
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        self.log_name = ''.join(re.split('-|:| ',str(datetime.utcnow()).split('.')[0]))
+        handler = logging.FileHandler("microFE-{0}.log".format(self.log_name))
+        self.logger.addHandler(handler)
+        self.logger.info(dedent("""
+        ***********
+        * microFE *
+        ***********
+        """))
 
 
     def check_configuration_file(self, p):
         """
         Check if the `.ini` configuration file contains all the required information.
         """
+        self.logger.info("Check configuration file definition")
+
         sections = ["directories", "images", "mesher", "fem", "job"]
 
         options = [["ct_image_folder", "output_dir", "mesher_src", "ld_lib_path"],
                    ["img_name"],
                    ["threshold", "resolution"],
                    ["boundary_condition", "units", "sign", "amount", "direction",
-                    "constrain"],
+                    "constrain", "E"],
                    ["name"]]
 
         for section, opts in zip(sections, options):
-            assert p.has_section(section), "{0} section not defined in configuration file".format(section)
+            try:
+                assert p.has_section(section)
+            except:
+                self.logger.error("\nERROR: {0} section not defined in configuration file".format(section))
+                raise
 
             for option in opts:
-                assert p.has_option(section, option), "{0} option not defined in configuration file".format(option)
+                try:
+                    assert p.has_option(section, option)
+                except:
+                    self.logger.error("\nERROR: {0} option not defined in configuration file".format(option))
+                    raise
 
 
     def load_folders(self, p):
         """
         Import folder paths from configuration file.
         """
+        self.logger.info("Read paths from configuration file")
+
         self.ct_img_folder = p.get("directories", "ct_image_folder")
         self.out_folder = p.get("directories", "output_dir")
         self.mesher_src = p.get("directories", "mesher_src")
         self.LD_LIB_PATH = p.get("directories", "ld_lib_path")
 
-        self.binary_folder = self.out_folder+"/Binary/"
-        self.tiff_folder = self.out_folder+"/tiff/"
+        self.binary_folder = self.out_folder+"Binary/"
+        self.tiff_folder = self.out_folder+"tiff/"
 
         self.img_name = p.get("images", "img_name")
 
@@ -83,9 +120,14 @@ class microFE():
         """
         Check if all the required folders exist. Create output folders.
         """
-        assert os.path.isdir(self.ct_img_folder), "CT_IMAGES_FOLDER does not exist!"
-        assert os.path.isdir(self.mesher_src), "MESHER_SRC does not exist!"
-        assert os.path.isdir(self.LD_LIB_PATH), "LD_LIB_PATH does not exist!"
+        self.logger.info("- Check paths")
+
+        for folder in [self.ct_img_folder, self.mesher_src, self.LD_LIB_PATH]:
+            try:
+                assert os.path.isdir(self.ct_img_folder), "CT_IMAGES_FOLDER does not exist!"
+            except:
+                self.logger.error("\nERROR: {0} does not exist".format(folder))
+                raise
 
         # output folders
         # TODO: if a folder already exist, ask before overwriting previous results.
@@ -105,6 +147,8 @@ class microFE():
         Import mesher parameters.
         Convert image resolution from micron to meters.
         """
+        self.logger.info("Read mesher parameters from configuration file")
+
         self.threshold = p.get("mesher", "threshold")
         self.resolution = float(p.get("mesher", "resolution"))*1e-6
 
@@ -113,6 +157,9 @@ class microFE():
         """
         Import finite element model parameters from configuration file.
         """
+        self.logger.info("Read FEM parameters from configuration file")
+
+        self.young = p.get("fem", "E")
         self.boundary_condition = p.get("fem", "boundary_condition")
         self.units = p.get("fem", "units")
         self.sign = p.get("fem", "sign")
@@ -125,20 +172,38 @@ class microFE():
         """
         Check if FEM parameters are correctly set.
         """
-        assert self.boundary_condition in ["displacement", "load"], "'boundary_condition' can be either 'displacement' or 'load'."
+        self.logger.info("- Check FEM parameters")
 
-        assert self.units in ["mm", "percent", "N"], "Boundary condition 'units' can be either 'mm' or '%' for 'displacement' or 'N' in case of 'load'."
+        options = [self.boundary_condition, self.units, self.sign, self.direction,
+                   self.constrain]
+        values = [["displacement", "load"], ["mm", "percent", "N"],
+                  ["positive", "negative"], ["x", "y", "z"], ["full", "free"]]
+        messages = ["'boundary_condition' can be either 'displacement' or 'load'",
+                    "Boundary condition 'units' can be either 'mm' or 'percent' for 'displacement' or 'N' in case of 'load'",
+                    "Boundary condition 'sign' can be either 'positive' or 'negative'",
+                    "Boundary condition 'direction' can be either 'x', 'y', or 'z'",
+                    "Boundary condition 'constrain' can be either 'full' or 'free'"]
+
+        for opt, vals, msg in zip(options, values, messages):
+            try:
+                assert opt in vals
+            except:
+                self.logger.error("\nERROR: {0}, not '{1}'".format(msg, opt))
+                raise
 
         if self.boundary_condition == "displacement":
-            assert self.units in ["mm", "percent"], "'units' for 'displacement' boundary condition can be either 'mm' or 'percent'."
+            try:
+                assert self.units in ["mm", "percent"]
+            except:
+                self.logger.error("\nERROR: 'units' for 'displacement' boundary condition can be either 'mm' or 'percent', not '{0}'".format(self.units))
+                raise
+
         elif self.boundary_condition == "load":
-            assert self.units == "N", "'units' for 'load' boundary condition can only be 'N'."
-
-        assert self.sign in ["positive", "negative"], "Boundary condition 'sign' can be either 'positive' or 'negative'."
-
-        assert self.direction in ["x", "y", "z"], "Boundary condition 'direction' can be either 'x', 'y', or 'z'."
-
-        assert self.constrain in ["full", "free"], "Boundary condition 'constrain' can be either 'full' or 'free'."
+            try:
+                assert self.units == "N"
+            except:
+                self.logger.error("\nERROR: 'units' for 'load' boundary condition can only be 'N', not '{0}'".format(self.units))
+                raise
 
 
     def load_job_parameters(self, p):
@@ -149,36 +214,50 @@ class microFE():
         """
         Convert DICOM image to a series of tiff images.
         """
-        d_img = pydicom.read_file("{0}/{1}".format(self.ct_img_folder, self.img_name))
-        self.tiff_name = self.img_name.split('.')[0]
+        self.logger.info("Convert microCT image from DICOM to TIFF")
 
-        for z in range(d_img.pixel_array.shape[0]):
-            z_img = d_img.pixel_array[z,:,:]
-            t_img = Image.fromarray(z_img)
-            t_img.save("{0}/{1}_{2:04d}.tif".format(self.tiff_folder, self.tiff_name, z))
+        try:
+            d_img = pydicom.read_file("{0}/{1}".format(self.ct_img_folder, self.img_name))
+            self.tiff_name = self.img_name.split('.')[0]
 
-        self.width = z_img.shape[0]*self.resolution
-        self.lenght = z_img.shape[1]*self.resolution
-        self.height = d_img.pixel_array.shape[0]*self.resolution
+            for z in range(d_img.pixel_array.shape[0]):
+                z_img = d_img.pixel_array[z,:,:]
+                t_img = Image.fromarray(z_img)
+                t_img.save("{0}/{1}_{2:04d}.tif".format(self.tiff_folder, self.tiff_name, z))
 
-        self.tiff_wildcard = self.img_name.split('.')[0] + "_****.tif"
+            self.width = z_img.shape[0]*self.resolution
+            self.lenght = z_img.shape[1]*self.resolution
+            self.height = d_img.pixel_array.shape[0]*self.resolution
+
+            self.tiff_wildcard = self.img_name.split('.')[0] + "_****.tif"
+        except:
+            self.logger.error("\nERROR: DICOM to TIFF conversion failed", exc_info=True)
+            raise
 
 
     def run_matlab_mesher(self):
         '''
         Run the matlab mesher.
         '''
-
         sep = '" '
         pre = '"'
 
         mesher_params = [self.tiff_folder, self.tiff_wildcard, self.binary_folder,
                         self.resolution, self.threshold, self.out_folder]
 
+        self.logger.info(dedent("""
+        Run matlab mesher
+        -----------------
+        microCT image: {0}{3}
+        resolution: {1}
+        threshold: {2}
+        """.format(self.ct_img_folder, self.resolution, self.threshold, self.img_name)))
+
         command = "{0}run_main.sh {1} ".format(self.mesher_src, self.LD_LIB_PATH)
         for p in mesher_params:
             command += pre+str(p)+sep
 
+        self.logger.info(command)
         os.system(command)
 
 
@@ -223,21 +302,35 @@ class microFE():
         else:
             self.displacement_constrain = "D,all, , , , , ,ALL, , , , ,"
 
+        self.logger.info(dedent("""
+        Setup FEM
+        ---------
+        BC: {0}
+         amount: {1} {2}
+         direction: {3}
+         constrain: {4}
+        Young's modulus: {5} Pa
+        """.format(self.boundary_condition, self.amount, self.units, self.direction,
+                   self.constrain, self.young)))
+
 
     def write_ansys_model(self):
         """
         Write ANSYS script to `fe_model.txt` file.
         """
+        self.logger.info("Write Ansys apdl script")
+
         with open("{0}fe_model.txt".format(self.out_folder), 'w') as f:
             opts = {"out_folder": self.out_folder, "job_name": self.job_name,
                     "direction": self.direction, "top_layer": self.top_layer,
                     "DU": self.du, "apdl_bc": self.apdl_bc,
-                    "constrain": self.displacement_constrain}
+                    "constrain": self.displacement_constrain,
+                    "young": self.young}
 
             f.write(dedent("""\
             /prep7
             ET,1,SOLID185
-            MP,EX,1,17000
+            MP,EX,1,{young}
             MP,PRXY,1,0.3
             /nopr
             /INPUT,'{out_folder}nodedata','txt'
@@ -280,8 +373,11 @@ class microFE():
         """
         Execute Ansys on ShARC.
         """
+        self.logger.info("Run FEM")
+
         command = "ansys172 -i fe_model.txt -j {1}".format(self.out_folder, self.job_name)
         os.chdir("{0}".format(self.out_folder))
+        self.logger.info(command)
         os.system(command)
 
 
@@ -291,8 +387,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mFE = microFE(args.cfg_file)
-    # mFE.run_matlab_mesher()
+    mFE.run_matlab_mesher()
 
     mFE.setup_fem_bcs()
     mFE.write_ansys_model()
-    # mFE.run_ansys_model()
+    mFE.run_ansys_model()
+
+    shutil.move("{0}/microFE-{1}.log".format(mFE.pwd, mFE.log_name),
+                "{0}microFE.log".format(mFE.out_folder))
