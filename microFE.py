@@ -82,7 +82,7 @@ class microFE():
                    ["threshold", "resolution"],
                    ["boundary_condition", "units", "sign", "amount", "direction",
                     "constrain", "E"],
-                   ["name"]]
+                   ["name", "np"]]
 
         for section, opts in zip(sections, options):
             try:
@@ -208,6 +208,7 @@ class microFE():
 
     def load_job_parameters(self, p):
         self.job_name = p.get("job", "name")
+        self.np = p.get("job", np)
 
 
     def dcm2tiff(self):
@@ -374,9 +375,11 @@ class microFE():
         Execute Ansys on ShARC.
         """
         self.logger.info("Run FEM")
+        os.chdir(self.out_folder)
 
-        command = "ansys172 -i fe_model.txt -j {1} -mpi=intel -rsh -sgepe mpi-rsh -t8".format(self.out_folder, self.job_name)
-        os.chdir("{0}".format(self.out_folder))
+        command = "ansys172 -dis -i fe_model.txt -j {0} ".format(self.job_name)
+        command+= "-mpi=intelmpi -rsh -sgepe mpi-rsh -np {1}".format(self.np)
+
         self.logger.info(command)
         os.system(command)
 
