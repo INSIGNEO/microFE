@@ -4,6 +4,7 @@
 #$ -l h_rt=24:00:00
 #$ -l rmem=32G
 #$ -N microFE
+#$ -pe mpi-rsh 8
 
 module load apps/matlab/2016a/binary
 module load apps/ansys/17.2

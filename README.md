@@ -54,6 +54,7 @@ threshold = <bone tissue threshold in uCT images, e.g., 18500>
 resolution = <voxel size in uCT images in micron, e.g., 19.96>
 
 [fem]
+E = <Young's modulus in Pa; float>
 boundary_condition = <`displacement` or `load`>
 units = <`mm` or `percent` for `displacement`, `N` for `load`>
 direction = <`x`, `y`, or `z`>

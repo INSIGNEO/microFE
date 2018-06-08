@@ -375,7 +375,7 @@ class microFE():
         """
         self.logger.info("Run FEM")
 
-        command = "ansys172 -i fe_model.txt -j {1}".format(self.out_folder, self.job_name)
+        command = "ansys172 -i fe_model.txt -j {1} -mpi=intel -rsh -sgepe mpi-rsh -t8".format(self.out_folder, self.job_name)
         os.chdir("{0}".format(self.out_folder))
         self.logger.info(command)
         os.system(command)
@@ -394,4 +394,4 @@ if __name__ == "__main__":
     mFE.run_ansys_model()
 
     shutil.move("{0}/microFE-{1}.log".format(mFE.pwd, mFE.log_name),
-                "{0}microFE.log".format(mFE.out_folder))
+                "{0}microFE.py.log".format(mFE.out_folder))
