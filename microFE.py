@@ -427,7 +427,7 @@ class microFE():
         os.chdir(self.out_folder)
 
         command = "ansys172 -dis -i fe_model.txt -j {0} ".format(self.job_name)
-        command+= "-mpi=intelmpi -rsh -sgepe mpi-rsh -np {1}".format(self.np)
+        command+= "-mpi=intelmpi -rsh -sgepe mpi-rsh -np {0}".format(self.np)
 
         self.logger.info(command)
         os.system(command)
