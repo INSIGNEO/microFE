@@ -98,6 +98,22 @@ class microFE():
                     self.logger.error("\nERROR: {0} option not defined in configuration file".format(option))
                     raise
 
+        # check plasticity definition
+        if p.has_option("fem", "yield_stress") and p.has_option("fem", "Et"):
+            self.yield_stress = p.get("fem", "yield_stress")
+            self.Et = p.get("fem", "Et")
+            self.plasticity = True
+            self.logger.info("Bilinear elastic-plastic model definition detected")
+
+        elif ((p.has_option("fem", "yield_stress") and not p.has_option("fem", "Et")) or \
+                (not p.has_option("fem", "yield_stress") and p.has_option("fem", "Et"))):
+            self.logger.error("\nERROR: elastic-plastic model requires yield_stress and Et")
+            raise
+
+        else:
+            self.logger.info("! Elastic model definition detected")
+            self.plasticity = False
+
 
     def load_folders(self, p):
         """
@@ -167,6 +183,9 @@ class microFE():
         self.direction = p.get("fem", "direction")
         self.constrain = p.get("fem", "constrain")
 
+        if self.plasticity:
+            self.Et = p.get("fem", "Et")
+            self.yield_stress = p.get("fem", "yield_stress")
 
     def check_fem_parameters(self):
         """
@@ -208,7 +227,7 @@ class microFE():
 
     def load_job_parameters(self, p):
         self.job_name = p.get("job", "name")
-        self.np = p.get("job", np)
+        self.np = p.get("job", "np")
 
 
     def dcm2tiff(self):
@@ -310,9 +329,36 @@ class microFE():
          amount: {1} {2}
          direction: {3}
          constrain: {4}
-        Young's modulus: {5} Pa
         """.format(self.boundary_condition, self.amount, self.units, self.direction,
-                   self.constrain, self.young)))
+                   self.constrain)))
+
+        if self.plasticity:
+            self.logger.info(dedent("""
+            Elastic-plastic model:
+             Young's modulus: {0} Pa
+             Yield stress {1} Pa
+             Tangent modulus: {2} Pa
+            """.format(self.young, self.yield_stress, self.Et)))
+
+            self.plasticity_material = dedent("""TB,BISO,1
+            TBDATA,1,{0},{1}
+            """.format(self.yield_stress, self.Et))
+
+            self.plasticity_solver = dedent("""NLGEOM,ON
+            NSUBST,20,1000,1
+            OUTRES,ALL,All
+            AUTOTS,ON
+            LNSRCH,ON
+            NEQUIT,1000
+            """)
+        else:
+            self.logger.info(dedent("""
+            Elastic model:
+             Young's modulus: {0} Pa
+            """.format(self.young)))
+
+            self.plasticity_material = " "
+            self.plasticity_solver = " "
 
 
     def write_ansys_model(self):
@@ -326,13 +372,15 @@ class microFE():
                     "direction": self.direction, "top_layer": self.top_layer,
                     "DU": self.du, "apdl_bc": self.apdl_bc,
                     "constrain": self.displacement_constrain,
-                    "young": self.young}
+                    "young": self.young, "plasticity_material": self.plasticity_material,
+                    "plasticity_solver": self.plasticity_solver}
 
             f.write(dedent("""\
             /prep7
             ET,1,SOLID185
             MP,EX,1,{young}
             MP,PRXY,1,0.3
+            {plasticity_material}
             /nopr
             /INPUT,'{out_folder}nodedata','txt'
             /INPUT,'{out_folder}elementdata','txt'
@@ -344,6 +392,7 @@ class microFE():
             allsel
 
             /Solu
+            {plasticity_solver}
             Antype,0
             eqslv,pcg
             solve

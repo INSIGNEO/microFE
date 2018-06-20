@@ -54,16 +54,19 @@ threshold = <bone tissue threshold in uCT images, e.g., 18500>
 resolution = <voxel size in uCT images in micron, e.g., 19.96>
 
 [fem]
-E = <Young's modulus in Pa; float>
 boundary_condition = <`displacement` or `load`>
 units = <`mm` or `percent` for `displacement`, `N` for `load`>
 direction = <`x`, `y`, or `z`>
 sign = <`positive` or `negative`>
 amount = <diplacement or load amount; float>
 constrain = <`full` or `free`>
+E = <Young's modulus in Pa; float>
+yield_stress = <yield stress value in Pa - only for plastic-elastic model; float>
+Et = <tangent Young's modulus in Pa - only for plastic-elastic model; float>
 
 [job]
 name = <job name>
+np = <number of processes>
 ```
 
 ## Matlab mesher
@@ -89,6 +92,7 @@ After executing microFE.py, the results will be saved in `OUTPUT_DIR/` folder as
   |- elementdata.txt          (mesh elements list)
   |- nodedata.txt             (mesh nodes list)
   |- fe_model.txt             (Ansys model script)
+  |- microFE.py.log           (log file)
   |- Binary/                  (Binary slices from microCT image)
   |   |- binary0001.tif
   |   |- binary0002.tif
