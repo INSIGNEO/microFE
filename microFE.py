@@ -317,10 +317,17 @@ class microFE():
             F,ALL,{1},NewtonPerNode
             """.format(self.load, self.fu))
 
+        # https://www.sharcnet.ca/Software/Ansys/17.0/en-us/help/ans_cmd/Hlp_C_GET.html
         if self.constrain == "free":
-            self.displacement_constrain = "D,ALL,{0},0".format(self.du)
+            self.displacement_constrain = dedent("""D,ALL,{0},0
+            *GET,minC1,KP,0,MNLOC,X
+            *GET,minC2,KP,0,MNLOC,Y
+            *GET,minC3,KP,0,MNLOC,Z
+            NSEL,R,LOC,X,minC1,Y,minC2,Z,minC3
+            D,ALL, , , , , ,ALL, , , , ,
+            """.format(self.du))
         else:
-            self.displacement_constrain = "D,all, , , , , ,ALL, , , , ,"
+            self.displacement_constrain = "D,ALL, , , , , ,ALL, , , , ,"
 
         self.logger.info(dedent("""
         Setup FEM
@@ -381,41 +388,41 @@ class microFE():
             MP,EX,1,{young}
             MP,PRXY,1,0.3
             {plasticity_material}
-            /nopr
+            /NOPR
             /INPUT,'{out_folder}nodedata','txt'
             /INPUT,'{out_folder}elementdata','txt'
-            /gopr
-            nsel,s,loc,{direction},0
+            /GOPR
+            NSEL,S,LOC,{direction},0
             {constrain}
-            nsel,s,loc,{direction},{top_layer:15.15f}
+            NSEL,S,LOC,{direction},{top_layer:15.15f}
             {apdl_bc}
-            allsel
+            ALLSEL
 
             /Solu
             {plasticity_solver}
-            Antype,0
-            eqslv,pcg
-            solve
+            ANTYPE,0
+            EQSLV,PCG
+            SOLVE
             SAVE,'{job_name}','db'
 
             /POST1
             SET,Last
-            *get,nNodes,NODE,0,count
+            *GET,nNodes,NODE,0,COUNT
             *DIM,Nodal_strain,ARRAY,nNodes,4
             N = 0
-            *do,i,1,nNodes
+            *DO,i,1,nNodes
             *GET,Nodal_strain(i,1),NODE,N,NXTH
             N = Nodal_strain(i,1)
             *GET,Nodal_strain(i,2),NODE,Nodal_strain(i,1),U,X
             *GET,Nodal_strain(i,3),NODE,Nodal_strain(i,1),U,Y
             *GET,Nodal_strain(i,4),NODE,Nodal_strain(i,1),U,Z
-            *enddo
-            *cfopen,'NodalDisplacements',txt
-            *vwrite,Nodal_strain(1,1),Nodal_strain(1,2),Nodal_strain(1,3),Nodal_strain(1,4)
+            *ENDDO
+            *CFOPEN,'NodalDisplacements',txt
+            *VWRITE,Nodal_strain(1,1),Nodal_strain(1,2),Nodal_strain(1,3),Nodal_strain(1,4)
             (F10.0,TL1,' ','  'F15.10,'  ',F15.10'  ',F15.10)
-            *cfclose
+            *CFCLOSE
             FINISH
-            /exit,nosave
+            /EXIT,NOSAVE
             """.format(**opts)))
 
 
@@ -427,7 +434,7 @@ class microFE():
         os.chdir(self.out_folder)
 
         command = "ansys172 -dis -i fe_model.txt -j {0} ".format(self.job_name)
-        command+= "-mpi=intelmpi -rsh -sgepe mpi-rsh -np {0}".format(self.np)
+        command += "-mpi=intelmpi -rsh -sgepe mpi-rsh -np {0}".format(self.np)
 
         self.logger.info(command)
         os.system(command)
@@ -439,11 +446,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mFE = microFE(args.cfg_file)
-    mFE.run_matlab_mesher()
+    # mFE.run_matlab_mesher()
 
     mFE.setup_fem_bcs()
     mFE.write_ansys_model()
-    mFE.run_ansys_model()
+    # mFE.run_ansys_model()
 
     shutil.move("{0}/microFE-{1}.log".format(mFE.pwd, mFE.log_name),
                 "{0}microFE.py.log".format(mFE.out_folder))
