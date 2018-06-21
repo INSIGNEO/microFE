@@ -23,3 +23,5 @@ example/*
 m_files/peakdet.m
 m_files/segm_th.m
 plot.py
+microFE.ini
+ansys_setup.txt
