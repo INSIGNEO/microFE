@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
     mFE.setup_fem_bcs()
     mFE.write_ansys_model()
-    # mFE.run_ansys_model()
+    mFE.run_ansys_model()
 
     shutil.move("{0}/microFE-{1}.log".format(mFE.pwd, mFE.log_name),
                 "{0}microFE.py.log".format(mFE.out_folder))
