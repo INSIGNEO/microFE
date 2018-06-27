@@ -101,7 +101,7 @@ After executing microFE.py, the results will be saved in `OUTPUT_DIR/` folder as
   |   |- <img_name>_0001.tif
   |   |- <img_name>_0002.tif
   |   |- ...
-  |- NodalDisplacments.txt    (nodal displacement from FEM solution as: node, x, y, z)
+  |- NodalDisplacements.txt   (nodal displacement from FEM solution as: node, x, y, z)
   |- <job_name>.db            (Ansys output files)
   |- <job_name>.err
   |- <job_name>.esav

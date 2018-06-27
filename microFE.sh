@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -M email@sharc.ac.uk
+#$ -M email@sheffield.ac.uk
 #$ -m bea
 #$ -l h_rt=24:00:00
 #$ -l rmem=32G

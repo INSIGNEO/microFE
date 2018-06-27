@@ -9,6 +9,7 @@ import logging
 import re
 from datetime import datetime
 import shutil
+import time
 
 
 class microFE():
@@ -27,6 +28,7 @@ class microFE():
         '''
 
         self.start_logger()
+        self.t0 = time.time()
 
 
         self.logger.info("Read .ini configuration file")
@@ -278,7 +280,9 @@ class microFE():
             command += pre+str(p)+sep
 
         self.logger.info(command)
-        os.system(command)
+        # os.system(command)
+        self.t1 = time.time()
+        self.logger.info("meshing time = {0} s".format(self.t1-self.t0))
 
 
     def setup_fem_bcs(self):
@@ -321,9 +325,11 @@ class microFE():
         if self.constrain == "free":
             self.displacement_constrain = dedent("""D,ALL,{0},0
             *GET,minC1,KP,0,MNLOC,X
+            NSEL,R,LOC,X,minC1
             *GET,minC2,KP,0,MNLOC,Y
+            NSEL,R,LOC,Y,minC2
             *GET,minC3,KP,0,MNLOC,Z
-            NSEL,R,LOC,X,minC1,Y,minC2,Z,minC3
+            NSEL,R,LOC,Z,minC3
             D,ALL, , , , , ,ALL, , , , ,
             """.format(self.du))
         else:
@@ -406,7 +412,7 @@ class microFE():
             SAVE,'{job_name}','db'
 
             /POST1
-            SET,Last
+            SET,LAST
             *GET,nNodes,NODE,0,COUNT
             *DIM,Nodal_strain,ARRAY,nNodes,4
             N = 0
@@ -446,7 +452,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mFE = microFE(args.cfg_file)
-    # mFE.run_matlab_mesher()
+    mFE.run_matlab_mesher()
 
     mFE.setup_fem_bcs()
     mFE.write_ansys_model()

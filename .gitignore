@@ -25,3 +25,9 @@ m_files/segm_th.m
 plot.py
 microFE.ini
 ansys_setup.txt
+__pycache__/*
+fra/*
+m_original/*
+microCTs/*
+output/*
+sharc-results/*
