@@ -280,7 +280,7 @@ class microFE():
             command += pre+str(p)+sep
 
         self.logger.info(command)
-        # os.system(command)
+        os.system(command)
         self.t1 = time.time()
         self.logger.info("meshing time = {0} s".format(self.t1-self.t0))
 
