@@ -189,6 +189,7 @@ class microFE():
             self.Et = p.get("fem", "Et")
             self.yield_stress = p.get("fem", "yield_stress")
 
+
     def check_fem_parameters(self):
         """
         Check if FEM parameters are correctly set.
@@ -444,6 +445,8 @@ class microFE():
 
         self.logger.info(command)
         os.system(command)
+        self.t2 = time.time()
+        self.logger.info("fea time = {0} s".format(self.t2-self.t1))
 
 
 if __name__ == "__main__":
