@@ -71,7 +71,7 @@ name = <job name>
 np = <number of processes>
 ```
 The element used in ANSYS APDL is the 8-nodes [SOLID185](https://www.sharcnet.ca/Software/Ansys/16.2.3/en-us/help/ans_elem/Hlp_E_SOLID185.html)
-![](https://www.sharcnet.ca/Software/Ansys/16.2.3/en-us/help/ans_elem/graphics/gELEM185-1.svg)
+<div style="text-align:center"><img src ="https://www.sharcnet.ca/Software/Ansys/16.2.3/en-us/help/ans_elem/graphics/gELEM185-1.svg" /></div>
 
 By specifying only the Young's modulus `E`, the analysis will be [linear elastic](https://www.sharcnet.ca/Software/Ansys/16.2.3/en-us/help/ans_mat/ann8sq39eldm.html#ELlinmatstressstrain), whereas including also `yield_stress` and `Et` (the tangent Young's modulus) the analysis will be [elastic-perfectly-plastic](https://www.sharcnet.ca/Software/Ansys/16.2.3/en-us/help/ans_mat/amp8sq21dldm.html#miso).
 
